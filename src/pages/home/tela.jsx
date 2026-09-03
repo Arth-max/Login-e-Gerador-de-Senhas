@@ -10,19 +10,15 @@ function Tela() {
     const navigate = useNavigate()
 
     const [loading, setLoading] = useState(false)
-    const [nome, setNome] = useState(Location.state?.usuario?.nome || '')
-    const [email, setEmail] = useState(Location.state?.usuario?.email || '')
-    const [usuario, setUsuario] = useState(Location.state?.usuario || {})
+    const inicialUser = Location.state?.usuario || {}
+    const [usuario, setUsuario] = useState(inicialUser)
+    const [nome, setNome] = useState(inicialUser.nome || '')
+    const [email, setEmail] = useState(inicialUser.email || '')
     const [temaClaro, setTemaClaro] = useState(false)
     const [OpenPerfil, setOpenPerfil] = useState(false)
     const [OpenConfig, setOpenConfig] = useState(false)
-    const [ImgUrl, setImgUrl] = useState('')
-    const [backgroundImg, setBackgroundImg] = useState(localStorage.getItem('backgroundImg') || '')
-
-    if (ImgUrl.trim() !== '') {
-        document.getElementById('ApImg').style.display = 'block'
-        document.getElementById('ApImg').classList.add('imgButton')
-    }
+    const [img, setImg] = useState(inicialUser.urlImg || '')
+    const [backgroundImg, setBackgroundImg] = useState(inicialUser.urlImg || '')
 
     function voltar() {
         navigate('/')
@@ -32,16 +28,46 @@ function Tela() {
         setTemaClaro(prev => !prev)
     }
 
-    function changeImg() {
-        if (ImgUrl.trim() === '') { return }
+    async function changeImg() {
+        const imageUrl = encodeURIComponent(img)
+        const nomeUser = encodeURIComponent(usuario.nome)
 
-        setBackgroundImg(ImgUrl)
-        localStorage.setItem('backgroundImg', ImgUrl)
-        setImgUrl('')
-        document.getElementById('ApImg').style.display = 'none'
-        document.getElementById('ApImg').classList.remove('imgButton')
-        document.getElementById('DelImg').style.display = 'block'
-        document.getElementById('DelImg').classList.add('delImgButton')
+        if (!img.trim()) { return; }
+
+        try {
+            new URL(img)
+        } catch (error) {
+            document.getElementById('msgConfig').style.color = 'darkred'
+            document.getElementById('msgConfig').textContent = "URL inválida"
+            return
+        }
+        try {
+            await API.post(`/usuario/image?imagemUrl=${imageUrl}&nome=${nomeUser}`)
+            setBackgroundImg(img)
+            setUsuario({
+                ...usuario,
+                urlImg: img
+            })
+            setImg('')
+            document.getElementById('msgConfig').style.color = 'seagreen'
+            document.getElementById('msgConfig').textContent = "Imagem de fundo aplicada com sucesso"
+        } catch (error) {
+            document.getElementById('msgConfig').style.color = 'darkred'
+            document.getElementById('msgConfig').textContent = "Erro ao aplicar imagem de fundo"
+        }
+    }
+
+    async function removeImg() {
+        try {
+            await API.delete(`/usuario/image?nome=${encodeURIComponent(usuario.nome)}`)
+            setBackgroundImg('')
+            setImg('')
+            document.getElementById('msgConfig').style.color = 'seagreen'
+            document.getElementById('msgConfig').textContent = "Imagem de fundo removida com sucesso"
+        } catch (error) {
+            document.getElementById('msgConfig').style.color = 'darkred'
+            document.getElementById('msgConfig').textContent = "Erro ao remover imagem de fundo"
+        }
     }
 
     function infoPerfil() {
@@ -124,7 +150,7 @@ function Tela() {
         }
     }
     return (
-        <div id="main" className={temaClaro ? 'AppBlank' : 'App'} style={{ backgroundImage: backgroundImg ? `url(${backgroundImg})` : 'none' }}>
+        <div id="main" className={temaClaro ? 'AppBlank' : 'App'} style={{ backgroundImage: backgroundImg ? `url("${backgroundImg}")` : 'none' }}>
             {/* Cabeçelho */}
             <header className="cabecalho">
                 <h1>Site de testes</h1>
@@ -135,13 +161,12 @@ function Tela() {
             <div id="Config" className="configurations" style={{ display: OpenConfig ? 'flex' : 'none' }}>
                 <h2> Configurações </h2>
                 <label>Mudar Imagem de fundo</label>
-                <input id="imgUrl" type="url" placeholder="Url da imagem" value={ImgUrl} onChange={(e) => setImgUrl(e.target.value)} />
-                <button id="ApImg" className="beforeCodigo" onClick={changeImg}> Aplicar </button>
-                <button id="DelImg" className="beforeCodigo" onClick={() => { 
-                    setBackgroundImg(''); setImgUrl(''); localStorage.removeItem('backgroundImg'); document.getElementById('DelImg').style.display = 'none' 
-                    }}> Remover Imagem </button>
+                <input id="imgUrl" type="url" placeholder="Url da imagem" value={img} onChange={(e) => setImg(e.target.value)} />
+                {img.trim() !== '' && <button id="ApImg" className="imgButton" onClick={changeImg}> Aplicar </button>}
+                {backgroundImg && <button id="DelImg" className="delImgButton" onClick={removeImg}> Remover Imagem </button>}
                 <button className="themeButton" onClick={changeColor}> Mudar tema do Site </button>
                 <button className="deleteButton" onClick={deleteUsers}> Deletar Conta </button>
+                <p id="msgConfig"></p>
             </div>
 
             {/* Site */}
