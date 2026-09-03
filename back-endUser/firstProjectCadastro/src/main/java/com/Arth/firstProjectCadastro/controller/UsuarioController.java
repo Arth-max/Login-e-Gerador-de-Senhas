@@ -44,6 +44,12 @@ public class UsuarioController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/image")
+    public ResponseEntity<Void> salvarImagem(@RequestParam String imagemUrl, @RequestParam String nome) {
+        usuarioService.salvarImagem(imagemUrl, nome);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/atualizarSenha")
     public ResponseEntity<Void> atualizarSenha(@RequestParam String email, @RequestParam int cod, @RequestBody NewSenhaDTO novaSenha) {
         usuarioService.atualizarSenha(email, cod, novaSenha.senha());
@@ -53,6 +59,12 @@ public class UsuarioController {
     @DeleteMapping
     public ResponseEntity<Void> deletarUsuarioPorEmail(@RequestParam String email) {
         usuarioService.deletarUsuarioPorEmail(email);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/image")
+    public ResponseEntity<Void> deletarImagem(@RequestParam String nome) {
+        usuarioService.deletarImagem(nome);
         return ResponseEntity.noContent().build();
     }
 

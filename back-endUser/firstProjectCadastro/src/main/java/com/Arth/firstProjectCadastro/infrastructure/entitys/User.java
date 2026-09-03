@@ -40,4 +40,5 @@ public class User {
 
     private Integer codigoRecuperacao;
     private LocalDateTime codExpiracao;
+    private String urlImg;
 }

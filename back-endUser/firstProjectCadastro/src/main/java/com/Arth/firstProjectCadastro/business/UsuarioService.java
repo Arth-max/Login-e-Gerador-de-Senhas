@@ -1,6 +1,5 @@
 package com.Arth.firstProjectCadastro.business;
 
-import com.Arth.firstProjectCadastro.infrastructure.entitys.NewSenhaDTO;
 import com.Arth.firstProjectCadastro.infrastructure.entitys.User;
 import com.Arth.firstProjectCadastro.infrastructure.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -38,6 +37,22 @@ public class UsuarioService {
             throw new RuntimeException("Senha incorreta");
         }
         return usuario;
+    }
+
+    public void salvarImagem(String image, String nome) {
+        User usuario = repository.findByNome(nome).orElseThrow(
+                () -> new RuntimeException("Usuário não encontrado")
+        );
+        usuario.setUrlImg(image);
+        repository.saveAndFlush(usuario);
+    }
+
+    public void deletarImagem(String nome) {
+        User usuario = repository.findByNome(nome).orElseThrow(
+                () -> new RuntimeException("Usuário não encontrado")
+        );
+        usuario.setUrlImg(null);
+        repository.saveAndFlush(usuario);
     }
 
     public void recuperarSenhaEmail(String email) {
