@@ -5,6 +5,7 @@ import com.Arth.firstProjectCadastro.infrastructure.repository.UsuarioRepository
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.SecureRandom;
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -14,6 +15,7 @@ public class UsuarioService {
     private final UsuarioRepository repository;
     private final emailService EmailService;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+    private final SecureRandom random = new SecureRandom();
 
     public UsuarioService(UsuarioRepository repository, emailService EmailService) {
         this.EmailService = EmailService;
@@ -59,7 +61,7 @@ public class UsuarioService {
         User usuario = repository.findByEmail(email).orElseThrow(
                 () -> new RuntimeException("email não encontrado")
         );
-        int cod = new Random().nextInt(900000) + 100000;
+        int cod = 100000 + random.nextInt(900000);
         usuario.setCodigoRecuperacao(cod);
         usuario.setCodExpiracao(LocalDateTime.now().plusMinutes(10));
         repository.saveAndFlush(usuario);
@@ -73,7 +75,7 @@ public class UsuarioService {
         if (usuarioEntity.getCodigoRecuperacao() == null || usuarioEntity.getCodExpiracao() == null) {
             throw new RuntimeException("Código inexistente, por favor digite o código");
         }
-        if (LocalDateTime.now().isBefore(usuarioEntity.getCodExpiracao())) {
+        if (!LocalDateTime.now().isBefore(usuarioEntity.getCodExpiracao())) {
             usuarioEntity.setCodigoRecuperacao(null);
             usuarioEntity.setCodExpiracao(null);
             repository.saveAndFlush(usuarioEntity);
@@ -90,6 +92,23 @@ public class UsuarioService {
             usuarioEntity.setCodigoRecuperacao(null);
             usuarioEntity.setCodExpiracao(null);
             repository.saveAndFlush(usuarioEntity);
+    }
+
+    public void confirmSenha(String email, String senha) {
+        User usuario = repository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("Usuario não encontrado")
+        );
+        if (!encoder.matches(senha, usuario.getSenha())) {
+            throw new RuntimeException("Senha incorreta");
+        }
+    }
+
+    public void salvarSenha(String email, String Ssenha) {
+        User usuarioEntity = repository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("Usuario não encontrado")
+        );
+        usuarioEntity.setSenha(encoder.encode(Ssenha));
+        repository.saveAndFlush(usuarioEntity);
     }
 
     public void atualizarUsuario(String email, User usuario) {

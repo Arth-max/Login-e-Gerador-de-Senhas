@@ -50,6 +50,12 @@ public class UsuarioController {
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/confirmar-senha")
+    public ResponseEntity<Void> confirmSenha(@RequestParam String email, @RequestBody NewSenhaDTO Csenha) {
+        usuarioService.confirmSenha(email, Csenha.senha());
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/atualizarSenha")
     public ResponseEntity<Void> atualizarSenha(@RequestParam String email, @RequestParam int cod, @RequestBody NewSenhaDTO novaSenha) {
         usuarioService.atualizarSenha(email, cod, novaSenha.senha());
