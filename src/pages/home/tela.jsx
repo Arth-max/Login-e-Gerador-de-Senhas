@@ -2,8 +2,12 @@ import './tela.css'
 import { useNavigate } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 import Config from '../../assets/Config.png'
+import Edit from '../../assets/Edit.png'
+import Sun from '../../assets/Sol.png'
+import Moon from '../../assets/Lua.png'
+import Lixeira from '../../assets/Lixeira.png'
 import API from '../../hooks/user.js'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 
 function Tela() {
     const Location = useLocation()
@@ -14,18 +18,37 @@ function Tela() {
     const [usuario, setUsuario] = useState(inicialUser)
     const [nome, setNome] = useState(inicialUser.nome || '')
     const [email, setEmail] = useState(inicialUser.email || '')
+
     const [temaClaro, setTemaClaro] = useState(false)
     const [OpenPerfil, setOpenPerfil] = useState(false)
     const [OpenConfig, setOpenConfig] = useState(false)
-    const [img, setImg] = useState(inicialUser.urlImg || '')
+    const [tela, setTela] = useState(false)
+    const [gerador, setGerador] = useState(false)
+    const [changeTheme, setChangeTheme] = useState(false)
+    const [Sol, setSun] = useState(false)
+    const [img, setImg] = useState('')
     const [backgroundImg, setBackgroundImg] = useState(inicialUser.urlImg || '')
 
+    const [valor, setValor] = useState(8)
+    const inputConfirmSenha = useRef()
+
+    const handleRange = (event) => {
+        setValor(Number(event.target.value))
+    }
+
     function voltar() {
+        setImg('')
         navigate('/')
     }
 
     function changeColor() {
         setTemaClaro(prev => !prev)
+        setSun(prev => !prev)
+    }
+
+    function mudarTema() {
+        setChangeTheme(prev => !prev)
+        setOpenConfig(false)
     }
 
     async function changeImg() {
@@ -83,10 +106,12 @@ function Tela() {
 
     function abrirConfig() {
         if (OpenConfig) {
+            document.getElementById('msgConfig').textContent = ""
             setOpenConfig(false)
         } else {
             setOpenConfig(true)
             setOpenPerfil(false)
+            setChangeTheme(false)
             document.getElementById('perfil').style.display = 'flex'
         }
     }
@@ -149,24 +174,84 @@ function Tela() {
             }
         }
     }
+
+    function infoSenhas() {
+        if (tela) {
+            setTela(false)
+        } else {
+            setTela(prev => !prev)
+        }
+    }
+
+    function createS() {
+        document.getElementById('SGSenhas').style.display = 'none'
+        setGerador(prev => !prev)
+    }
+    
+    async function confirmSenha() {
+        const senha = inputConfirmSenha.current.value
+
+        if (senha === "") {
+            document.getElementById('msgCS').style.color = 'darkred'
+            document.getElementById('msgCS').textContent = "Por favor digite a senha"
+            return
+        }
+
+        try {
+            await API.post(`/usuario/confirmar-senha?email=${usuario.email}`, {
+                Csenha: senha
+            })
+            document.getElementById('msgCS').style.color = 'seagreen'
+            document.getElementById('msgCS').textContent = "Senha correta"
+            
+        } catch (error) {
+            document.getElementById('msgCS').style.color = 'darkred'
+            document.getElementById('msgCS').textContent = "Senha incorreta"
+        }
+    }
+
+    function gerarSenha() {
+
+    }
+
+    function criarSenha() {
+
+    }
+
+    function salvarSenha() {
+
+    }
+
+    function voltar() {
+        document.getElementById('SGSenhas').style.display = 'flex'
+        setGerador(false)
+    }
+    
     return (
         <div id="main" className={temaClaro ? 'AppBlank' : 'App'} style={{ backgroundImage: backgroundImg ? `url("${backgroundImg}")` : 'none' }}>
             {/* Cabeçelho */}
             <header className="cabecalho">
                 <h1>Site de testes</h1>
-                <button className="configButton" onClick={abrirConfig}><img src={Config} alt="Configurações" /></button>
+                <div className="botoes">
+                    <button className="editButton" onClick={mudarTema}><img src={Edit} alt="Mudar Tema"/></button>
+                    <button className="configButton" onClick={abrirConfig}><img src={Config} alt="Configurações" /></button>
+                </div>
             </header>
 
             {/* Configurações */}
             <div id="Config" className="configurations" style={{ display: OpenConfig ? 'flex' : 'none' }}>
                 <h2> Configurações </h2>
+                <button className="themeButton" onClick={changeColor}> <img src={Sol ? Sun : Moon}/> Mudar Tema </button>
+                <button className="deleteButton" onClick={deleteUsers}> <img src={Lixeira} alt=""/> Deletar Conta </button>
+                <p id="msgConfig"></p>
+            </div>
+
+            {/* Mudar imagem de fundo */}
+            <div id="changeTheme" className="configurations" style={{ display: changeTheme ? 'flex' : 'none' }}>
                 <label>Mudar Imagem de fundo</label>
                 <input id="imgUrl" type="url" placeholder="Url da imagem" value={img} onChange={(e) => setImg(e.target.value)} />
                 {img.trim() !== '' && <button id="ApImg" className="imgButton" onClick={changeImg}> Aplicar </button>}
                 {backgroundImg && <button id="DelImg" className="delImgButton" onClick={removeImg}> Remover Imagem </button>}
-                <button className="themeButton" onClick={changeColor}> Mudar tema do Site </button>
-                <button className="deleteButton" onClick={deleteUsers}> Deletar Conta </button>
-                <p id="msgConfig"></p>
             </div>
 
             {/* Site */}
@@ -193,6 +278,50 @@ function Tela() {
                             <button onClick={fecharInfo}> Fechar </button>
                         </div>
                         <p id="msg" className="beforeCodigo"></p>
+                    </div>
+                
+                    <div id="SGSenhas" className="card">
+                        <h2>🔑 Gerador e Salvador de Senhas</h2>
+                        <p> Visualize e crie suas senhas </p>
+                        <button onClick={infoSenhas}> Visualizar senhas salvas </button>
+                        <button onClick={createS}> Ir gerar Senhas </button>
+                    </div>
+
+                    <div className="confirmSenha" style={{display: tela ? 'flex' : 'none'}}>
+                        <p>Digite a sua senha do site</p>
+                        <input type="password" name="senha" placeholder="Sua senha" ref={inputConfirmSenha}></input>
+                        <button className="imgButton" onClick={confirmSenha}> Confirmar Senha </button>
+                        <p id="msgCS"></p>
+                    </div>
+
+                    <div className="geradorSenha" style={{display: gerador ? 'flex' : 'none'}}>
+                        <h1>Gerador de Senhas</h1>
+                        <div className="opcoesSenha">
+                            <label htmlFor="myRange"> Tamanho da Senha: </label>
+                            <input id="myRange" type="range" min="8" max="20" value={valor} onChange={handleRange} />
+
+                            <label></label>
+
+                            <label> <span>{valor}</span> </label>
+
+                            <label> <input type="checkbox" value="letrasM" id="Maiusculas" />Maiúsculas </label>
+                            
+                            <label> <input type="checkbox" value="letrasm" id="Minusculas"/>Minúsculas</label>
+                            
+                            <label> <input type="checkbox" value="numeros" id="numeros" />Números </label>
+                            
+                            <label> <input type="checkbox" value="simbolos" id="simbolos" />Simbolos </label>
+                        </div>
+                        <input id="Dsenha" type="text" name="senha" placeholder="Descrição da sua senha"></input>
+                        <input id="Gsenha" type="password" name="senha" placeholder="Sua senha gerada aqui"></input>
+                        <div className="botoes">
+                            <button className="imgButton" onClick={gerarSenha}> Gerar Senha </button>
+                            <button className="saveButton" onClick={salvarSenha}> Salvar Senha </button>
+                        </div>
+                        <div className="botoes">
+                            <button className="createButton" onClick={criarSenha}> Criar Senha </button>
+                            <button onClick={voltar}> Voltar </button>
+                        </div>
                     </div>
                 </section>
                 <button className="logout" onClick={voltar}> Sair </button>
