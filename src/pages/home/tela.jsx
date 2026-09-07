@@ -6,6 +6,8 @@ import Edit from '../../assets/Edit.png'
 import Sun from '../../assets/Sol.png'
 import Moon from '../../assets/Lua.png'
 import Lixeira from '../../assets/Lixeira.png'
+import desverSenha from '../../assets/desverSenha.png'
+import verSenha from '../../assets/verSenha.png'
 import API from '../../hooks/user.js'
 import { useState, useRef } from 'react'
 
@@ -25,12 +27,22 @@ function Tela() {
     const [tela, setTela] = useState(false)
     const [gerador, setGerador] = useState(false)
     const [changeTheme, setChangeTheme] = useState(false)
+    const [VerSenha, setMostrarSenha] = useState(false)
     const [Sol, setSun] = useState(false)
     const [img, setImg] = useState('')
     const [backgroundImg, setBackgroundImg] = useState(inicialUser.urlImg || '')
 
     const [valor, setValor] = useState(8)
+    const [senha, setSenha] = useState('')
     const inputConfirmSenha = useRef()
+    const [useNumeros, setUseNumeros] = useState(false)
+    const [useEspeciais, setUseEspeciais] = useState(false)
+    const [useMaiusculas, setUseMaiusculas] = useState(false)
+    const [useMinusculas, setUseMinusculas] = useState(false)
+
+    const handleChange = (event) => {
+        setIsChecked(event.target.checked)
+    }
 
     const handleRange = (event) => {
         setValor(Number(event.target.value))
@@ -199,7 +211,7 @@ function Tela() {
 
         try {
             await API.post(`/usuario/confirmar-senha?email=${usuario.email}`, {
-                Csenha: senha
+                senha: senha
             })
             document.getElementById('msgCS').style.color = 'seagreen'
             document.getElementById('msgCS').textContent = "Senha correta"
@@ -210,8 +222,30 @@ function Tela() {
         }
     }
 
-    function gerarSenha() {
+    async function gerarSenha() {
+        let num, mai, min, esp = false
+        if (useNumeros) num = true
+        if (useMaiusculas) mai = true
+        if (useMinusculas) min = true
+        if (useEspeciais) esp = true
 
+        try {
+            const response = await API.post(`/usuario/gerar-senha`, {
+                tamanho: valor,
+                numeros: num,
+                especiais: esp,
+                maiusculas: mai,
+                minusculas: min
+            })
+
+            setSenha(response.data)
+
+            document.getElementById('msgGS').style.color = 'seagreen'
+            document.getElementById('msgGS').textContent = "Senha gerada com sucesso!"
+        } catch (error) {
+            document.getElementById('msgGS').style.color = 'darkred'
+            document.getElementById('msgGS').textContent = "Erro ao gerar senha"
+        }
     }
 
     function criarSenha() {
@@ -222,9 +256,14 @@ function Tela() {
 
     }
 
-    function voltar() {
+    function voltarGS() {
+        document.getElementById('Gsenha').value = ''
         document.getElementById('SGSenhas').style.display = 'flex'
         setGerador(false)
+    }
+
+    function mostrarSenha() {
+        setMostrarSenha(!VerSenha)
     }
     
     return (
@@ -289,7 +328,10 @@ function Tela() {
 
                     <div className="confirmSenha" style={{display: tela ? 'flex' : 'none'}}>
                         <p>Digite a sua senha do site</p>
-                        <input type="password" name="senha" placeholder="Sua senha" ref={inputConfirmSenha}></input>
+                        <div className='senhas'>
+                            <input type={VerSenha ? 'text' : 'password'} name="senha" placeholder="Sua senha" ref={inputConfirmSenha}></input>
+                            <button type="button" className='divSenhas' onClick={mostrarSenha}><img src={VerSenha ? desverSenha : verSenha} alt="" /></button>
+                        </div>
                         <button className="imgButton" onClick={confirmSenha}> Confirmar Senha </button>
                         <p id="msgCS"></p>
                     </div>
@@ -298,30 +340,31 @@ function Tela() {
                         <h1>Gerador de Senhas</h1>
                         <div className="opcoesSenha">
                             <label htmlFor="myRange"> Tamanho da Senha: </label>
-                            <input id="myRange" type="range" min="8" max="20" value={valor} onChange={handleRange} />
+                            <input id="myRange" type="range" min="8" max="20" value={valor} onChange={handleRange}/>
 
                             <label></label>
 
                             <label> <span>{valor}</span> </label>
 
-                            <label> <input type="checkbox" value="letrasM" id="Maiusculas" />Maiúsculas </label>
+                            <label> <input type="checkbox" checked={useMaiusculas} onChange={(e) => {setUseMaiusculas(e.target.checked)}} value="letrasM" id="Maiusculas" />Maiúsculas </label>
                             
-                            <label> <input type="checkbox" value="letrasm" id="Minusculas"/>Minúsculas</label>
+                            <label> <input type="checkbox" checked={useMinusculas} onChange={(e) => {setUseMinusculas(e.target.checked)}} value="letrasm" id="Minusculas" />Minúsculas</label>
                             
-                            <label> <input type="checkbox" value="numeros" id="numeros" />Números </label>
+                            <label> <input type="checkbox" checked={useNumeros} onChange={(e) => {setUseNumeros(e.target.checked)}} value="numeros" id="numeros" />Números </label>
                             
-                            <label> <input type="checkbox" value="simbolos" id="simbolos" />Simbolos </label>
+                            <label> <input type="checkbox" checked={useEspeciais} onChange={(e) => {setUseEspeciais(e.target.checked)}} value="simbolos" id="simbolos" />Simbolos </label>
                         </div>
                         <input id="Dsenha" type="text" name="senha" placeholder="Descrição da sua senha"></input>
-                        <input id="Gsenha" type="password" name="senha" placeholder="Sua senha gerada aqui"></input>
+                        <input id="Gsenha" type="password" name="senha" placeholder="Sua senha gerada aqui" value={senha} onChange={(e) => setSenha(e.target.value)}></input>
                         <div className="botoes">
                             <button className="imgButton" onClick={gerarSenha}> Gerar Senha </button>
                             <button className="saveButton" onClick={salvarSenha}> Salvar Senha </button>
                         </div>
                         <div className="botoes">
                             <button className="createButton" onClick={criarSenha}> Criar Senha </button>
-                            <button onClick={voltar}> Voltar </button>
+                            <button onClick={voltarGS}> Voltar </button>
                         </div>
+                        <p id="msgGS"></p>
                     </div>
                 </section>
                 <button className="logout" onClick={voltar}> Sair </button>
