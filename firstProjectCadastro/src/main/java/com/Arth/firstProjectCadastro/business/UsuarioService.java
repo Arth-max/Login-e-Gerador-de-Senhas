@@ -7,6 +7,9 @@ import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Random;
 
 
@@ -101,6 +104,28 @@ public class UsuarioService {
         if (!encoder.matches(senha, usuario.getSenha())) {
             throw new RuntimeException("Senha incorreta");
         }
+    }
+
+    public String gerarSenha(int tamanho, boolean n, boolean M, boolean m, boolean esp) {
+        String numeros = "0123456789";
+        String minusculas = "abcdefghijklmnopqrstuvwxyz";
+        String maiusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String especiais = "!@#$%&*():;/[]";
+        StringBuilder pool = new StringBuilder();
+
+        if (n)    pool.append(numeros);
+        if (M)    pool.append(maiusculas);
+        if (m)    pool.append(minusculas);
+        if (esp)  pool.append(especiais);
+
+        if (pool.isEmpty()) throw new RuntimeException("Selecione um tipo de caracterer");
+
+        StringBuilder senhaCriada = new StringBuilder();
+
+        for (int i = 0; i < tamanho; i++) {
+            senhaCriada.append(pool.charAt(random.nextInt(pool.length())));
+        }
+        return senhaCriada.toString();
     }
 
     public void salvarSenha(String email, String Ssenha) {

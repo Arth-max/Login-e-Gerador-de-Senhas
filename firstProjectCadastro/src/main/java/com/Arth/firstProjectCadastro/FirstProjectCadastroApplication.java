@@ -8,7 +8,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class FirstProjectCadastroApplication {
 	public static void main(String[] args) {
 		Dotenv dotenv = Dotenv.load();
-		dotenv.entries().forEach(entry -> System.out.println(entry.getKey()));
 
 		dotenv.entries().forEach(entry -> System.setProperty(entry.getKey(), entry.getValue()));
 

@@ -1,10 +1,7 @@
 package com.Arth.firstProjectCadastro.controller;
 
 import com.Arth.firstProjectCadastro.business.UsuarioService;
-import com.Arth.firstProjectCadastro.infrastructure.entitys.NewSenhaDTO;
-import com.Arth.firstProjectCadastro.infrastructure.entitys.User;
-import com.Arth.firstProjectCadastro.infrastructure.entitys.LoginDTO;
-import com.Arth.firstProjectCadastro.infrastructure.entitys.UsuarioResponseDTO;
+import com.Arth.firstProjectCadastro.infrastructure.entitys.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -54,6 +51,13 @@ public class UsuarioController {
     public ResponseEntity<Void> confirmSenha(@RequestParam String email, @RequestBody NewSenhaDTO Csenha) {
         usuarioService.confirmSenha(email, Csenha.senha());
         return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/gerar-senha")
+    public ResponseEntity<String> gerarSenha(@RequestBody gerarSenhaDTO senhaGerada) {
+        String senha = usuarioService.gerarSenha(senhaGerada.tamanho(), senhaGerada.numero(), senhaGerada.maiusculas(),
+                                  senhaGerada.minusculas(), senhaGerada.especiais());
+        return ResponseEntity.ok(senha);
     }
 
     @PutMapping("/atualizarSenha")
