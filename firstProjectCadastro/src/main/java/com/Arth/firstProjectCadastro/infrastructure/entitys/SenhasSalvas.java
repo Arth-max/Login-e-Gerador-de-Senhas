@@ -13,7 +13,7 @@ import java.time.LocalDateTime;
 @Getter
 @Setter
 
-public class senhasSalvas {
+public class SenhasSalvas {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
