@@ -1,28 +1,28 @@
 package com.Arth.firstProjectCadastro.business;
 
 import com.Arth.firstProjectCadastro.infrastructure.entitys.User;
+import com.Arth.firstProjectCadastro.infrastructure.entitys.senhasSalvas;
+import com.Arth.firstProjectCadastro.infrastructure.repository.SenhasRepository;
 import com.Arth.firstProjectCadastro.infrastructure.repository.UsuarioRepository;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Random;
 
 
 @Service
 public class UsuarioService {
     private final UsuarioRepository repository;
-    private final emailService EmailService;
+    private final EmailService EmailService;
+    private final SenhasRepository senhasRepository;
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final SecureRandom random = new SecureRandom();
 
-    public UsuarioService(UsuarioRepository repository, emailService EmailService) {
+    public UsuarioService(UsuarioRepository repository, EmailService EmailService, SenhasRepository senhasRepository) {
         this.EmailService = EmailService;
         this.repository = repository;
+        this.senhasRepository = senhasRepository;
     }
 
     public void salvarUsuario(User usuario) {
@@ -106,21 +106,37 @@ public class UsuarioService {
         }
     }
 
-    public String gerarSenha(int tamanho, boolean n, boolean M, boolean m, boolean esp) {
-        String numeros = "0123456789";
-        String minusculas = "abcdefghijklmnopqrstuvwxyz";
-        String maiusculas = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-        String especiais = "!@#$%&*():;/[]";
+    public String gerarSenha(int tamanho, Boolean numeros, Boolean Maiusculas, Boolean Minusculas, Boolean Especiais) {
         StringBuilder pool = new StringBuilder();
+        StringBuilder senhaCriada = new StringBuilder();
 
-        if (n)    pool.append(numeros);
-        if (M)    pool.append(maiusculas);
-        if (m)    pool.append(minusculas);
-        if (esp)  pool.append(especiais);
+        if (tamanho < 8 || tamanho > 20) {
+            throw new RuntimeException("Senha muito grande ou muito pequena");
+        }
+
+        String numerosCharacters = "0123456789";
+        String maiusculasCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        String minusculasCharacters = "abcdefghijklmnopqrstuvwxyz";
+        String especiaisCharacters = "!@#$%&*()<>{}/-";
+
+        if (Boolean.TRUE.equals(numeros)) {
+            pool.append(numerosCharacters);
+            senhaCriada.append(numerosCharacters.charAt(random.nextInt(numerosCharacters.length())));
+        }
+        if (Boolean.TRUE.equals(Maiusculas)) {
+            pool.append(maiusculasCharacters);
+            senhaCriada.append(maiusculasCharacters.charAt(random.nextInt(maiusculasCharacters.length())));
+        }
+        if (Boolean.TRUE.equals(Minusculas)) {
+            pool.append(minusculasCharacters);
+            senhaCriada.append(minusculasCharacters.charAt(random.nextInt(minusculasCharacters.length())));
+        }
+        if (Boolean.TRUE.equals(Especiais)) {
+            pool.append(especiaisCharacters);
+            senhaCriada.append(especiaisCharacters.charAt(random.nextInt(especiaisCharacters.length())));
+        }
 
         if (pool.isEmpty()) throw new RuntimeException("Selecione um tipo de caracterer");
-
-        StringBuilder senhaCriada = new StringBuilder();
 
         for (int i = 0; i < tamanho; i++) {
             senhaCriada.append(pool.charAt(random.nextInt(pool.length())));
@@ -128,12 +144,25 @@ public class UsuarioService {
         return senhaCriada.toString();
     }
 
-    public void salvarSenha(String email, String Ssenha) {
+    public void salvarSenha(String descricao, String email, String Ssenha) {
         User usuarioEntity = repository.findByEmail(email).orElseThrow(
                 () -> new RuntimeException("Usuario não encontrado")
         );
-        usuarioEntity.setSenha(encoder.encode(Ssenha));
-        repository.saveAndFlush(usuarioEntity);
+
+        if (descricao == null || descricao.isBlank()) {
+            throw new RuntimeException("Coloque uma descricao para salvar a senha");
+        }
+
+        if (Ssenha == null || Ssenha.isBlank()) {
+            throw new RuntimeException("Se quiser salvar uma senha, coloque uma senha");
+        }
+
+        senhasSalvas salvarSenha = senhasSalvas.builder()
+                .Descricao(descricao).SenhaCrypto(Ssenha)
+                .dataCriacao(LocalDateTime.now()).usuario(usuarioEntity)
+                .build();
+
+        senhasRepository.save(salvarSenha);
     }
 
     public void atualizarUsuario(String email, User usuario) {

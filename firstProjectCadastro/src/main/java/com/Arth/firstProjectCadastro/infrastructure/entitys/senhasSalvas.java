@@ -22,11 +22,8 @@ public class senhasSalvas {
     @Column(nullable = false)
     private String Descricao;
 
-    @Column(nullable = false, length = 1000)
+    @Column(nullable = false, length = 500)
     private String SenhaCrypto;
-
-    @Column(nullable = false)
-    private String iv;
 
     private LocalDateTime dataCriacao;
 
