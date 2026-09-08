@@ -37,6 +37,8 @@ function Tela() {
     const [senha, setSenha] = useState('')
     const inputConfirmSenha = useRef()
     const inputDescricao = useRef()
+    const [pass, setSavePass] = useState([])
+    const [senhaVisivel, setSenhaVisivel] = useState(null)
     const [useNumeros, setUseNumeros] = useState(false)
     const [useEspeciais, setUseEspeciais] = useState(false)
     const [useMaiusculas, setUseMaiusculas] = useState(false)
@@ -208,15 +210,24 @@ function Tela() {
         }
 
         try {
-            await API.post(`/usuario/confirmar-senha?email=${usuario.email}`, {
+            await API.post(`/usuario/confirmar-senha?email=${encodeURIComponent(usuario.email)}`, {
                 senha: senha
             })
             document.getElementById('msgCS').style.color = 'seagreen'
             document.getElementById('msgCS').textContent = "Senha correta"
+
+            const SenhaResponse = await API.get(`/usuario/buscar-senhas?email=${encodeURIComponent(usuario.email)}`)
+            setSavePass(SenhaResponse.data)
             
-            setSenhasSalvas(prev => !prev)
             setTela(false)
+            setSenhasSalvas(true)
+            if (SenhaResponse.data.length === 0) {
+                document.getElementById('msgSS').style.color = 'darkred'
+                document.getElementById('msgSS').textContent = "Nenhuma senha salva"
+                return
+            }
         } catch (error) {
+            console.error = error
             document.getElementById('msgCS').style.color = 'darkred'
             document.getElementById('msgCS').textContent = "Senha incorreta"
         }
@@ -242,21 +253,17 @@ function Tela() {
         }
     }
 
-    function criarSenha() {
-
-    }
-
     async function salvarSenha() {
         const descricao = inputDescricao.current.value
 
         if (descricao === "") {
-            document.getElementById('msgCS').style.color = 'darkred'
-            document.getElementById('msgCS').textContent = "Por favor digite uma descrição"
+            document.getElementById('msgGS').style.color = 'darkred'
+            document.getElementById('msgGS').textContent = "Por favor digite uma descrição"
             return
         }
         if (senha === "") {
-            document.getElementById('msgCS').style.color = 'darkred'
-            document.getElementById('msgCS').textContent = "Por favor gere ou digite uma senha"
+            document.getElementById('msgGS').style.color = 'darkred'
+            document.getElementById('msgGS').textContent = "Por favor gere ou digite uma senha"
             return
         }
 
@@ -266,11 +273,17 @@ function Tela() {
                 descricao: descricao
             })
 
-            document.getElementById('msgCS').style.color = 'seagreen'
-            document.getElementById('msgCS').textContent = "Senha salva com sucesso"
+            setUseMaiusculas(false)
+            setUseMinusculas(false)
+            setUseEspeciais(false)
+            setUseNumeros(false)
+            setSenha('')
+            setValor(8)
+            document.getElementById('msgGS').style.color = 'seagreen'
+            document.getElementById('msgGS').textContent = "Senha salva com sucesso"
         } catch (error) {
-            document.getElementById('msgCS').style.color = 'darkred'
-            document.getElementById('msgCS').textContent = "Erro ao salvar senha"
+            document.getElementById('msgGS').style.color = 'darkred'
+            document.getElementById('msgGS').textContent = "Erro ao salvar senha"
         }
     }
 
@@ -281,6 +294,7 @@ function Tela() {
         setUseNumeros(false)
         setSenha('')
         setValor(8)
+        document.getElementById('Dsenha').value = ''
         document.getElementById('SGSenhas').style.display = 'flex'
         document.getElementById('msgGS').textContent = ''
         setGerador(false)
@@ -288,6 +302,10 @@ function Tela() {
 
     function mostrarSenha() {
         setMostrarSenha(!VerSenha)
+    }
+
+    function mostrarSenhas(id) {
+        setSenhaVisivel(senhaVisivel === id ? null : id)
     }
 
     function voltarSS() {
@@ -368,11 +386,21 @@ function Tela() {
 
                     <div className="senhasSalvas" style={{display: senhasSalvas ? 'flex' : 'none'}}>
                         <h1> Suas Senhas Salvas </h1>
-                        <div className="senhas">
-                            <input type={VerSenha ? 'text' : 'password'}/>
-                            <button type="button" className='divSenhas' onClick={mostrarSenha}><img src={VerSenha ? desverSenha : verSenha} alt="" /></button>
+                        <div id="divSenhas">
+                            {pass.map((item) => (
+                                <div className="senhaSalva" key={item.id}>
+                                    <div className="campoSenha">
+                                        <label>{item.descricao}</label>
+                                    <input type={senhaVisivel === item.id ? 'text' : 'password'} value={item.senha} readOnly />
+                                    <button type="button" onClick={() => mostrarSenhas(item.id)}>
+                                        <img src={senhaVisivel === item.id ? desverSenha : verSenha}/>
+                                    </button>
+                                    </div>
+                                </div>
+                            ))}
                         </div>
                         <button onClick={voltarSS}> Voltar </button>
+                        <p id="msgSS"></p>
                     </div>
 
                     <div className="geradorSenha" style={{display: gerador ? 'flex' : 'none'}}>
@@ -398,9 +426,6 @@ function Tela() {
                         <div className="botoes">
                             <button className="imgButton" onClick={gerarSenha}> Gerar Senha </button>
                             <button className="saveButton" onClick={salvarSenha}> Salvar Senha </button>
-                        </div>
-                        <div className="botoes">
-                            <button className="createButton" onClick={criarSenha}> Criar Senha </button>
                             <button onClick={voltarGS}> Voltar </button>
                         </div>
                         <p id="msgGS"></p>

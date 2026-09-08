@@ -217,14 +217,18 @@
   flex-direction: column;
   align-items: center;
   border-radius: 18px;
-  background: rgba(70, 130, 180, 0.2);
+  background: gray;
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transform: translate(-50%, -50%);
 }
 .senhasSalvas input {
-  background: rgb(29, 49, 49);
+  background: rgba(47, 79, 79, 0.2);
+  backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+.senhasSalvas input:focus {
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
 }
 
 .opcoesSenha {
@@ -265,6 +269,42 @@
   background: rgba(255, 255, 255, 0.05);
   border: 1px solid rgba(255, 255, 255, 0.15);
   color: white;
+}
+
+#divSenhas {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.senhaSalva {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+.senhaSalva label {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+.campoSenha {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.campoSenha input {
+  flex: 1;
+}
+.campoSenha button {
+  width: 45px;
+  height: 40px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+}
+.campoSenha img {
+  width: 20px;
 }
 
 .confirmSenha {
