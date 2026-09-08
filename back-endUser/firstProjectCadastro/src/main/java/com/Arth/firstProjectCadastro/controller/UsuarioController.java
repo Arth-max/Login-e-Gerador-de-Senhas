@@ -6,6 +6,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequestMapping("/usuario")
@@ -35,15 +37,20 @@ public class UsuarioController {
         }
     }
 
-    @PostMapping("/recuperar-senha")
-    public ResponseEntity<Void> recuperarSenhaEmail(@RequestParam String email) {
-        usuarioService.recuperarSenhaEmail(email);
-        return ResponseEntity.ok().build();
-    }
-
     @PostMapping("/image")
     public ResponseEntity<Void> salvarImagem(@RequestParam String imagemUrl, @RequestParam String nome) {
         usuarioService.salvarImagem(imagemUrl, nome);
+        return ResponseEntity.ok().build();
+    }
+
+    @GetMapping("/buscar-senhas")
+    public ResponseEntity<List<SenhasResponseDTO>> searchSenhas(@RequestParam String email) {
+        return ResponseEntity.ok(usuarioService.searchSenhas(email));
+    }
+
+    @PostMapping("/recuperar-senha")
+    public ResponseEntity<Void> recuperarSenhaEmail(@RequestParam String email) {
+        usuarioService.recuperarSenhaEmail(email);
         return ResponseEntity.ok().build();
     }
 
@@ -53,22 +60,22 @@ public class UsuarioController {
         return ResponseEntity.ok().build();
     }
 
-    @PostMapping("/gerar-senha")
-    public ResponseEntity<String> gerarSenha(@RequestBody GerarSenhaDTO senhaGerada) {
-        String senha = usuarioService.gerarSenha(senhaGerada.tamanho(), senhaGerada.numeros(), senhaGerada.maiusculas(),
-                                  senhaGerada.minusculas(), senhaGerada.especiais());
-        return ResponseEntity.ok(senha);
-    }
-
     @PutMapping("/atualizarSenha")
     public ResponseEntity<Void> atualizarSenha(@RequestParam String email, @RequestParam int cod, @RequestBody NewSenhaDTO novaSenha) {
         usuarioService.atualizarSenha(email, cod, novaSenha.senha());
         return ResponseEntity.ok().build();
     }
 
+    @PostMapping("/gerar-senha")
+    public ResponseEntity<String> gerarSenha(@RequestBody GerarSenhaDTO senhaGerada) {
+        String senha = usuarioService.gerarSenha(senhaGerada.tamanho(), senhaGerada.numeros(), senhaGerada.maiusculas(),
+                senhaGerada.minusculas(), senhaGerada.especiais());
+        return ResponseEntity.ok(senha);
+    }
+
     @PostMapping("/salvar-senha")
     public ResponseEntity<Void> salvarSenha(@RequestParam String email, @RequestBody SalvarSenhaDTO Ssenha) {
-        usuarioService.salvarSenha(email, Ssenha.descricao(), Ssenha.senha());
+        usuarioService.salvarSenha(email, Ssenha.senha(), Ssenha.descricao());
         return ResponseEntity.ok().build();
     }
 

@@ -1,15 +1,28 @@
 package com.Arth.firstProjectCadastro.business;
 
+import com.Arth.firstProjectCadastro.infrastructure.entitys.SalvarSenhaDTO;
+import com.Arth.firstProjectCadastro.infrastructure.entitys.SenhasResponseDTO;
 import com.Arth.firstProjectCadastro.infrastructure.entitys.User;
-import com.Arth.firstProjectCadastro.infrastructure.entitys.senhasSalvas;
+import com.Arth.firstProjectCadastro.infrastructure.entitys.SenhasSalvas;
 import com.Arth.firstProjectCadastro.infrastructure.repository.SenhasRepository;
 import com.Arth.firstProjectCadastro.infrastructure.repository.UsuarioRepository;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
+import javax.crypto.Cipher;
+import javax.crypto.SecretKey;
+import javax.crypto.spec.GCMParameterSpec;
+import javax.crypto.spec.SecretKeySpec;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.Base64;
+import java.util.List;
+import java.util.Collections;
 
 @Service
 public class UsuarioService {
@@ -19,10 +32,62 @@ public class UsuarioService {
     private final BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
     private final SecureRandom random = new SecureRandom();
 
-    public UsuarioService(UsuarioRepository repository, EmailService EmailService, SenhasRepository senhasRepository) {
+    private static final String Transform = "AES/GCM/NoPadding";
+    private static final int TAG_LENGTH_BIT = 128;
+    private static final int IV_LENGTH_BYTE = 12;
+    private final SecretKey secretKey;
+
+    public UsuarioService(UsuarioRepository repository, EmailService EmailService,
+                          SenhasRepository senhasRepository, @Value("${app.fixed_Key}") String key) {
         this.EmailService = EmailService;
         this.repository = repository;
         this.senhasRepository = senhasRepository;
+
+        byte[] keyBytes = Base64.getDecoder().decode(key);
+        if (keyBytes.length != 32) {
+            throw new IllegalArgumentException("A chave deve possuir 32 bits");
+        }
+        this.secretKey = new SecretKeySpec(keyBytes, "AES");
+    }
+
+    public String encrypt(String encryptText) throws Exception {
+        byte[] iv = new byte[IV_LENGTH_BYTE];
+        random.nextBytes(iv);
+
+        Cipher cipher = Cipher.getInstance(Transform);
+        GCMParameterSpec parameterSpec = new GCMParameterSpec(TAG_LENGTH_BIT, iv);
+
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, parameterSpec);
+        byte[] cipherText = cipher.doFinal(encryptText.getBytes(StandardCharsets.UTF_8));
+
+        ByteBuffer byteBuffer = ByteBuffer.allocate(iv.length + cipherText.length);
+        byteBuffer.put(iv);
+        byteBuffer.put(cipherText);
+
+        return Base64.getEncoder().encodeToString(byteBuffer.array());
+    }
+
+    public String decrypt(String strToDecrypt) throws Exception {
+        byte[] decodedBytes = Base64.getDecoder().decode(strToDecrypt);
+
+        if (decodedBytes.length <= IV_LENGTH_BYTE) {
+            throw new IllegalArgumentException("Criptografia inválida");
+        }
+
+        ByteBuffer byteBuffer = ByteBuffer.wrap(decodedBytes);
+        byte[] iv = new byte[IV_LENGTH_BYTE];
+        byteBuffer.get(iv);
+
+        byte[] cipherText = new byte[byteBuffer.remaining()];
+        byteBuffer.get(cipherText);
+
+        Cipher cipher = Cipher.getInstance(Transform);
+        GCMParameterSpec parameterSpec = new GCMParameterSpec(TAG_LENGTH_BIT, iv);
+
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, parameterSpec);
+        byte[] pText = cipher.doFinal(cipherText);
+
+        return new String(pText, StandardCharsets.UTF_8);
     }
 
     public void salvarUsuario(User usuario) {
@@ -118,33 +183,49 @@ public class UsuarioService {
         String maiusculasCharacters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         String minusculasCharacters = "abcdefghijklmnopqrstuvwxyz";
         String especiaisCharacters = "!@#$%&*()<>{}/-";
+        int obrigatorios = 0;
 
         if (Boolean.TRUE.equals(numeros)) {
             pool.append(numerosCharacters);
             senhaCriada.append(numerosCharacters.charAt(random.nextInt(numerosCharacters.length())));
+            obrigatorios++;
         }
         if (Boolean.TRUE.equals(Maiusculas)) {
             pool.append(maiusculasCharacters);
             senhaCriada.append(maiusculasCharacters.charAt(random.nextInt(maiusculasCharacters.length())));
+            obrigatorios++;
         }
         if (Boolean.TRUE.equals(Minusculas)) {
             pool.append(minusculasCharacters);
             senhaCriada.append(minusculasCharacters.charAt(random.nextInt(minusculasCharacters.length())));
+            obrigatorios++;
         }
         if (Boolean.TRUE.equals(Especiais)) {
             pool.append(especiaisCharacters);
             senhaCriada.append(especiaisCharacters.charAt(random.nextInt(especiaisCharacters.length())));
+            obrigatorios++;
         }
 
         if (pool.isEmpty()) throw new RuntimeException("Selecione um tipo de caracterer");
 
-        for (int i = 0; i < tamanho; i++) {
+        for (int i = obrigatorios; i < tamanho; i++) {
             senhaCriada.append(pool.charAt(random.nextInt(pool.length())));
         }
-        return senhaCriada.toString();
+        List<Character> Caracteres = new ArrayList<>();
+        for (int j = 0; j < senhaCriada.length(); j++) {
+            Caracteres.add(senhaCriada.charAt(j));
+        }
+        Collections.shuffle(Caracteres, random);
+        StringBuilder result = new StringBuilder();
+
+        for (char c: Caracteres) {
+            result.append(c);
+        }
+
+        return result.toString();
     }
 
-    public void salvarSenha(String descricao, String email, String Ssenha) {
+    public void salvarSenha(String email, String Ssenha, String descricao) {
         User usuarioEntity = repository.findByEmail(email).orElseThrow(
                 () -> new RuntimeException("Usuario não encontrado")
         );
@@ -157,12 +238,35 @@ public class UsuarioService {
             throw new RuntimeException("Se quiser salvar uma senha, coloque uma senha");
         }
 
-        senhasSalvas salvarSenha = senhasSalvas.builder()
-                .Descricao(descricao).SenhaCrypto(Ssenha)
-                .dataCriacao(LocalDateTime.now()).usuario(usuarioEntity)
-                .build();
+        try {
+            String senhaCripto = encrypt(Ssenha);
+            SenhasSalvas salvarSenha = SenhasSalvas.builder()
+                    .Descricao(descricao).SenhaCrypto(senhaCripto)
+                    .dataCriacao(LocalDateTime.now()).usuario(usuarioEntity)
+                    .build();
 
-        senhasRepository.save(salvarSenha);
+            senhasRepository.save(salvarSenha);
+        } catch (Exception e) {
+            throw new RuntimeException("Erro ao criptografar a senha");
+        }
+    }
+
+    public List<SenhasResponseDTO> searchSenhas(String email) {
+        User usuario = repository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("Usuário não encontrado")
+        );
+
+        return senhasRepository.findByUsuario(usuario).stream()
+                .map(s -> {
+                        try {
+                            return new SenhasResponseDTO(
+                                    s.getId(), s.getDataCriacao(),
+                                    s.getDescricao(), decrypt(s.getSenhaCrypto())
+                            );
+                        } catch (Exception e) {
+                            throw new RuntimeException("Erro ao descriptografar senhas");
+                        }
+                }).toList();
     }
 
     public void atualizarUsuario(String email, User usuario) {
