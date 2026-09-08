@@ -26,6 +26,7 @@ function Tela() {
     const [OpenConfig, setOpenConfig] = useState(false)
     const [tela, setTela] = useState(false)
     const [gerador, setGerador] = useState(false)
+    const [senhasSalvas, setSenhasSalvas] = useState(false)
     const [changeTheme, setChangeTheme] = useState(false)
     const [VerSenha, setMostrarSenha] = useState(false)
     const [Sol, setSun] = useState(false)
@@ -35,14 +36,11 @@ function Tela() {
     const [valor, setValor] = useState(8)
     const [senha, setSenha] = useState('')
     const inputConfirmSenha = useRef()
+    const inputDescricao = useRef()
     const [useNumeros, setUseNumeros] = useState(false)
     const [useEspeciais, setUseEspeciais] = useState(false)
     const [useMaiusculas, setUseMaiusculas] = useState(false)
     const [useMinusculas, setUseMinusculas] = useState(false)
-
-    const handleChange = (event) => {
-        setIsChecked(event.target.checked)
-    }
 
     const handleRange = (event) => {
         setValor(Number(event.target.value))
@@ -216,6 +214,8 @@ function Tela() {
             document.getElementById('msgCS').style.color = 'seagreen'
             document.getElementById('msgCS').textContent = "Senha correta"
             
+            setSenhasSalvas(prev => !prev)
+            setTela(false)
         } catch (error) {
             document.getElementById('msgCS').style.color = 'darkred'
             document.getElementById('msgCS').textContent = "Senha incorreta"
@@ -223,19 +223,13 @@ function Tela() {
     }
 
     async function gerarSenha() {
-        let num, mai, min, esp = false
-        if (useNumeros) num = true
-        if (useMaiusculas) mai = true
-        if (useMinusculas) min = true
-        if (useEspeciais) esp = true
-
         try {
             const response = await API.post(`/usuario/gerar-senha`, {
                 tamanho: valor,
-                numeros: num,
-                especiais: esp,
-                maiusculas: mai,
-                minusculas: min
+                numeros: useNumeros,
+                especiais: useEspeciais,
+                maiusculas: useMaiusculas,
+                minusculas: useMinusculas
             })
 
             setSenha(response.data)
@@ -252,18 +246,54 @@ function Tela() {
 
     }
 
-    function salvarSenha() {
+    async function salvarSenha() {
+        const descricao = inputDescricao.current.value
 
+        if (descricao === "") {
+            document.getElementById('msgCS').style.color = 'darkred'
+            document.getElementById('msgCS').textContent = "Por favor digite uma descrição"
+            return
+        }
+        if (senha === "") {
+            document.getElementById('msgCS').style.color = 'darkred'
+            document.getElementById('msgCS').textContent = "Por favor gere ou digite uma senha"
+            return
+        }
+
+        try {
+            await API.post(`/usuario/salvar-senha?email=${encodeURIComponent(usuario.email)}`, {
+                senha: senha,
+                descricao: descricao
+            })
+
+            document.getElementById('msgCS').style.color = 'seagreen'
+            document.getElementById('msgCS').textContent = "Senha salva com sucesso"
+        } catch (error) {
+            document.getElementById('msgCS').style.color = 'darkred'
+            document.getElementById('msgCS').textContent = "Erro ao salvar senha"
+        }
     }
 
     function voltarGS() {
-        document.getElementById('Gsenha').value = ''
+        setUseMaiusculas(false)
+        setUseMinusculas(false)
+        setUseEspeciais(false)
+        setUseNumeros(false)
+        setSenha('')
+        setValor(8)
         document.getElementById('SGSenhas').style.display = 'flex'
+        document.getElementById('msgGS').textContent = ''
         setGerador(false)
     }
 
     function mostrarSenha() {
         setMostrarSenha(!VerSenha)
+    }
+
+    function voltarSS() {
+        setSenhasSalvas(false)
+        document.getElementById('Csenha').value = ''
+        document.getElementById('msgCS').style.display = 'none'
     }
     
     return (
@@ -329,11 +359,20 @@ function Tela() {
                     <div className="confirmSenha" style={{display: tela ? 'flex' : 'none'}}>
                         <p>Digite a sua senha do site</p>
                         <div className='senhas'>
-                            <input type={VerSenha ? 'text' : 'password'} name="senha" placeholder="Sua senha" ref={inputConfirmSenha}></input>
+                            <input id="Csenha" type={VerSenha ? 'text' : 'password'} name="senha" placeholder="Sua senha" ref={inputConfirmSenha}></input>
                             <button type="button" className='divSenhas' onClick={mostrarSenha}><img src={VerSenha ? desverSenha : verSenha} alt="" /></button>
                         </div>
                         <button className="imgButton" onClick={confirmSenha}> Confirmar Senha </button>
                         <p id="msgCS"></p>
+                    </div>
+
+                    <div className="senhasSalvas" style={{display: senhasSalvas ? 'flex' : 'none'}}>
+                        <h1> Suas Senhas Salvas </h1>
+                        <div className="senhas">
+                            <input type={VerSenha ? 'text' : 'password'}/>
+                            <button type="button" className='divSenhas' onClick={mostrarSenha}><img src={VerSenha ? desverSenha : verSenha} alt="" /></button>
+                        </div>
+                        <button onClick={voltarSS}> Voltar </button>
                     </div>
 
                     <div className="geradorSenha" style={{display: gerador ? 'flex' : 'none'}}>
@@ -354,8 +393,8 @@ function Tela() {
                             
                             <label> <input type="checkbox" checked={useEspeciais} onChange={(e) => {setUseEspeciais(e.target.checked)}} value="simbolos" id="simbolos" />Simbolos </label>
                         </div>
-                        <input id="Dsenha" type="text" name="senha" placeholder="Descrição da sua senha"></input>
-                        <input id="Gsenha" type="password" name="senha" placeholder="Sua senha gerada aqui" value={senha} onChange={(e) => setSenha(e.target.value)}></input>
+                        <input id="Dsenha" type="text" name="senha" placeholder="Descrição da sua senha" ref={inputDescricao}></input>
+                        <input id="Gsenha" type="text" name="senha" placeholder="Sua senha gerada aqui" value={senha} onChange={(e) => setSenha(e.target.value)}></input>
                         <div className="botoes">
                             <button className="imgButton" onClick={gerarSenha}> Gerar Senha </button>
                             <button className="saveButton" onClick={salvarSenha}> Salvar Senha </button>

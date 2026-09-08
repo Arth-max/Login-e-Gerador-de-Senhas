@@ -203,6 +203,29 @@
 .geradorSenha input[type="text"] {
   width: 50%;
 }
+.senhasSalvas {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 30px;
+  gap: 15px;
+  width: 100%;
+  max-width: 650px;
+  margin: 0 auto;
+  box-sizing: border-box;
+  display: none;
+  flex-direction: column;
+  align-items: center;
+  border-radius: 18px;
+  background: rgba(70, 130, 180, 0.2);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transform: translate(-50%, -50%);
+}
+.senhasSalvas input {
+  background: rgb(29, 49, 49);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
 
 .opcoesSenha {
   width: 100%;
