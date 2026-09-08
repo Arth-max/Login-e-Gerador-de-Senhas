@@ -6,13 +6,13 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Service;
 
 @Service
-public class emailService {
+public class EmailService {
     private final JavaMailSender emailSender;
 
     @Value("${spring.mail.username}")
     private String remetente;
 
-    public emailService(JavaMailSender emailSender) {
+    public EmailService(JavaMailSender emailSender) {
         this.emailSender = emailSender;
     }
 

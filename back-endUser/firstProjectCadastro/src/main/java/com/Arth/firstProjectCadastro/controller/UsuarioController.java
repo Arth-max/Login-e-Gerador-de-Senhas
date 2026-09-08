@@ -54,8 +54,8 @@ public class UsuarioController {
     }
 
     @PostMapping("/gerar-senha")
-    public ResponseEntity<String> gerarSenha(@RequestBody gerarSenhaDTO senhaGerada) {
-        String senha = usuarioService.gerarSenha(senhaGerada.tamanho(), senhaGerada.numero(), senhaGerada.maiusculas(),
+    public ResponseEntity<String> gerarSenha(@RequestBody GerarSenhaDTO senhaGerada) {
+        String senha = usuarioService.gerarSenha(senhaGerada.tamanho(), senhaGerada.numeros(), senhaGerada.maiusculas(),
                                   senhaGerada.minusculas(), senhaGerada.especiais());
         return ResponseEntity.ok(senha);
     }
@@ -63,6 +63,12 @@ public class UsuarioController {
     @PutMapping("/atualizarSenha")
     public ResponseEntity<Void> atualizarSenha(@RequestParam String email, @RequestParam int cod, @RequestBody NewSenhaDTO novaSenha) {
         usuarioService.atualizarSenha(email, cod, novaSenha.senha());
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/salvar-senha")
+    public ResponseEntity<Void> salvarSenha(@RequestParam String email, @RequestBody SalvarSenhaDTO Ssenha) {
+        usuarioService.salvarSenha(email, Ssenha.descricao(), Ssenha.senha());
         return ResponseEntity.ok().build();
     }
 
