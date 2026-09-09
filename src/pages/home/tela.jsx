@@ -1,3 +1,4 @@
+//importações de imagens, arquivos e funções
 import './tela.css'
 import { useNavigate } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
@@ -12,15 +13,18 @@ import API from '../../hooks/user.js'
 import { useState, useRef } from 'react'
 
 function Tela() {
-    const Location = useLocation()
-    const navigate = useNavigate()
+    const Location = useLocation() //Estado local
+    const navigate = useNavigate() //navegador
 
-    const [loading, setLoading] = useState(false)
+    //Estados globais do usuário (nome, email, Imagem)
     const inicialUser = Location.state?.usuario || {}
     const [usuario, setUsuario] = useState(inicialUser)
     const [nome, setNome] = useState(inicialUser.nome || '')
     const [email, setEmail] = useState(inicialUser.email || '')
+    const [backgroundImg, setBackgroundImg] = useState(inicialUser.urlImg || '')
 
+    //Estados da tela (botões, inputs, senhas, etc)
+    const [loading, setLoading] = useState(false)
     const [temaClaro, setTemaClaro] = useState(false)
     const [OpenPerfil, setOpenPerfil] = useState(false)
     const [OpenConfig, setOpenConfig] = useState(false)
@@ -31,38 +35,106 @@ function Tela() {
     const [VerSenha, setMostrarSenha] = useState(false)
     const [Sol, setSun] = useState(false)
     const [img, setImg] = useState('')
-    const [backgroundImg, setBackgroundImg] = useState(inicialUser.urlImg || '')
-
-    const [valor, setValor] = useState(8)
     const [senha, setSenha] = useState('')
-    const inputConfirmSenha = useRef()
-    const inputDescricao = useRef()
     const [pass, setSavePass] = useState([])
     const [senhaVisivel, setSenhaVisivel] = useState(null)
+
+    //Estados dos inputs
+    const inputConfirmSenha = useRef()
+    const inputDescricao = useRef()
+    const [valor, setValor] = useState(8)
     const [useNumeros, setUseNumeros] = useState(false)
     const [useEspeciais, setUseEspeciais] = useState(false)
     const [useMaiusculas, setUseMaiusculas] = useState(false)
     const [useMinusculas, setUseMinusculas] = useState(false)
 
+    //Funções relacionadas aos estados da tela\\
+    //Função que atualizar o range do gerador de senhas
     const handleRange = (event) => {
         setValor(Number(event.target.value))
     }
-
+    //Função para Deslogar o usuário
     function voltar() {
         setImg('')
         navigate('/')
     }
-
+    //Função para mudar o tema principal do site
     function changeColor() {
         setTemaClaro(prev => !prev)
         setSun(prev => !prev)
     }
-
+    //Abrir tela para mudar a imagem de fundo do site
     function mudarTema() {
         setChangeTheme(prev => !prev)
         setOpenConfig(false)
+        document.getElementById('msgImg').textContent = ''
+    }
+    //Abrir tela para editar o perfil
+    function infoPerfil() {
+        document.getElementById('perfil').style.display = 'none'
+        setOpenPerfil(true)
+        setOpenConfig(false)
+    }
+    //Fechar tela para editar o perfil
+    function fecharInfo() {
+        document.getElementById('perfil').style.display = 'flex'
+        setOpenPerfil(false)
+    }
+    //Abrir tela de configurações
+    function abrirConfig() {
+        if (OpenConfig) {
+            setOpenConfig(false)
+        } else {
+            setOpenConfig(true)
+            setOpenPerfil(false)
+            setChangeTheme(false)
+            document.getElementById('perfil').style.display = 'flex'
+        }
+    }
+    //Abrir tela para confirmar senha do usuário
+    function infoSenhas() {
+        if (tela) {
+            setTela(false)
+        } else {
+            setTela(prev => !prev)
+        }
+    }
+    //Abrir tela do gerador de senha
+    function createS() {
+        document.getElementById('SGSenhas').style.display = 'none'
+        setGerador(prev => !prev)
+    }
+    //Função para voltar do gerador de senhas para tela principal
+    function voltarGS() {
+        setUseMaiusculas(false)
+        setUseMinusculas(false)
+        setUseEspeciais(false)
+        setUseNumeros(false)
+        setSenha('')
+        setValor(8)
+        document.getElementById('Dsenha').value = ''
+        document.getElementById('SGSenhas').style.display = 'flex'
+        document.getElementById('msgGS').textContent = ''
+        setGerador(false)
     }
 
+    //Função para mostrar ou esconder a senha
+    function mostrarSenha() {
+        setMostrarSenha(!VerSenha)
+    }
+    //Função para mostrar ou esconder as senhas exclusivamente da tela Senhas Salvas
+    function mostrarSenhas(id) {
+        setSenhaVisivel(senhaVisivel === id ? null : id)
+    }
+    //Função para voltar da tela Senhas Salvas para tela principal
+    function voltarSS() {
+        setSenhasSalvas(false)
+        document.getElementById('Csenha').value = ''
+        document.getElementById('msgCS').style.display = 'none'
+    }
+
+    //Funções relacionadas a API\\
+    //Função para mudar a imagem de fundo(API)
     async function changeImg() {
         const imageUrl = encodeURIComponent(img)
         const nomeUser = encodeURIComponent(usuario.nome)
@@ -72,8 +144,8 @@ function Tela() {
         try {
             new URL(img)
         } catch (error) {
-            document.getElementById('msgConfig').style.color = 'darkred'
-            document.getElementById('msgConfig').textContent = "URL inválida"
+            document.getElementById('msgImg').style.color = 'darkred'
+            document.getElementById('msgImg').textContent = "URL inválida"
             return
         }
         try {
@@ -84,49 +156,29 @@ function Tela() {
                 urlImg: img
             })
             setImg('')
-            document.getElementById('msgConfig').style.color = 'seagreen'
-            document.getElementById('msgConfig').textContent = "Imagem de fundo aplicada com sucesso"
+            document.getElementById('msgImg').style.color = 'seagreen'
+            document.getElementById('msgImg').textContent = "Imagem de fundo aplicada com sucesso"
         } catch (error) {
-            document.getElementById('msgConfig').style.color = 'darkred'
-            document.getElementById('msgConfig').textContent = "Erro ao aplicar imagem de fundo"
+            document.getElementById('msgImg').style.color = 'darkred'
+            document.getElementById('msgImg').textContent = "Erro ao aplicar imagem de fundo"
         }
     }
 
+    //Função para remover a imagem de fundo(API)
     async function removeImg() {
         try {
             await API.delete(`/usuario/image?nome=${encodeURIComponent(usuario.nome)}`)
             setBackgroundImg('')
             setImg('')
-            document.getElementById('msgConfig').style.color = 'seagreen'
-            document.getElementById('msgConfig').textContent = "Imagem de fundo removida com sucesso"
+            document.getElementById('msgImg').style.color = 'seagreen'
+            document.getElementById('msgImg').textContent = "Imagem de fundo removida com sucesso"
         } catch (error) {
-            document.getElementById('msgConfig').style.color = 'darkred'
-            document.getElementById('msgConfig').textContent = "Erro ao remover imagem de fundo"
+            document.getElementById('msgImg').style.color = 'darkred'
+            document.getElementById('msgImg').textContent = "Erro ao remover imagem de fundo"
         }
     }
 
-    function infoPerfil() {
-        document.getElementById('perfil').style.display = 'none'
-        setOpenPerfil(true)
-        setOpenConfig(false)
-    }
-
-    function fecharInfo() {
-        document.getElementById('perfil').style.display = 'flex'
-        setOpenPerfil(false)
-    }
-
-    function abrirConfig() {
-        if (OpenConfig) {
-            document.getElementById('msgConfig').textContent = ""
-            setOpenConfig(false)
-        } else {
-            setOpenConfig(true)
-            setOpenPerfil(false)
-            setChangeTheme(false)
-            document.getElementById('perfil').style.display = 'flex'
-        }
-    }
+    //Função para editar o perfil do usuário(API)
     async function editarPerfil() {
         setLoading(true)
         try {
@@ -170,6 +222,7 @@ function Tela() {
         }
     }
 
+    //Função para deletar o usuário(API)
     async function deleteUsers() {
         const confirmDelete = window.confirm("Tem certeza que deseja deletar sua conta? Esta ação não pode ser desfeita.")
 
@@ -186,20 +239,8 @@ function Tela() {
             }
         }
     }
-
-    function infoSenhas() {
-        if (tela) {
-            setTela(false)
-        } else {
-            setTela(prev => !prev)
-        }
-    }
-
-    function createS() {
-        document.getElementById('SGSenhas').style.display = 'none'
-        setGerador(prev => !prev)
-    }
     
+    //Função para confirmar a senha do usuário e Mostra-las na tela de Senhas Salvas(API)
     async function confirmSenha() {
         const senha = inputConfirmSenha.current.value
 
@@ -233,6 +274,7 @@ function Tela() {
         }
     }
 
+    //Função para gerar a senha(API)
     async function gerarSenha() {
         try {
             const response = await API.post(`/usuario/gerar-senha`, {
@@ -253,6 +295,7 @@ function Tela() {
         }
     }
 
+    //Função para salvar a senha(API)
     async function salvarSenha() {
         const descricao = inputDescricao.current.value
 
@@ -279,6 +322,7 @@ function Tela() {
             setUseNumeros(false)
             setSenha('')
             setValor(8)
+            document.getElementById('Dsenha').value = ''
             document.getElementById('msgGS').style.color = 'seagreen'
             document.getElementById('msgGS').textContent = "Senha salva com sucesso"
         } catch (error) {
@@ -287,6 +331,7 @@ function Tela() {
         }
     }
 
+    //Função para deletar a senha criada/gerada(API)
     async function deletarSenha(id) {
         const confirm = window.confirm("Deseja realmente deletar essa senha?")
 
@@ -314,38 +359,11 @@ function Tela() {
             document.getElementById('msgSS').style.color = 'darkred'
             document.getElementById('msgSS').textContent = "Erro ao deletar senha"
         }
-    }
+    } 
 
-    function voltarGS() {
-        setUseMaiusculas(false)
-        setUseMinusculas(false)
-        setUseEspeciais(false)
-        setUseNumeros(false)
-        setSenha('')
-        setValor(8)
-        document.getElementById('Dsenha').value = ''
-        document.getElementById('SGSenhas').style.display = 'flex'
-        document.getElementById('msgGS').textContent = ''
-        setGerador(false)
-    }
-
-    function mostrarSenha() {
-        setMostrarSenha(!VerSenha)
-    }
-
-    function mostrarSenhas(id) {
-        setSenhaVisivel(senhaVisivel === id ? null : id)
-    }
-
-    function voltarSS() {
-        setSenhasSalvas(false)
-        document.getElementById('Csenha').value = ''
-        document.getElementById('msgCS').style.display = 'none'
-    }
-    
     return (
         <div id="main" className={temaClaro ? 'AppBlank' : 'App'} style={{ backgroundImage: backgroundImg ? `url("${backgroundImg}")` : 'none' }}>
-            {/* Cabeçelho */}
+            {/* Cabeçalho */}
             <header className="cabecalho">
                 <h1>Site de testes</h1>
                 <div className="botoes">
@@ -359,7 +377,6 @@ function Tela() {
                 <h2> Configurações </h2>
                 <button className="themeButton" onClick={changeColor}> <img src={Sol ? Sun : Moon}/> Mudar Tema </button>
                 <button className="deleteButton" onClick={deleteUsers}> <img src={Lixeira} alt=""/> Deletar Conta </button>
-                <p id="msgConfig"></p>
             </div>
 
             {/* Mudar imagem de fundo */}
@@ -368,6 +385,7 @@ function Tela() {
                 <input id="imgUrl" type="url" placeholder="Url da imagem" value={img} onChange={(e) => setImg(e.target.value)} />
                 {img.trim() !== '' && <button id="ApImg" className="imgButton" onClick={changeImg}> Aplicar </button>}
                 {backgroundImg && <button id="DelImg" className="delImgButton" onClick={removeImg}> Remover Imagem </button>}
+                <p id="msgImg"></p>
             </div>
 
             {/* Site */}
@@ -381,7 +399,7 @@ function Tela() {
                         <p> Visualize e edite suas informações de usuário </p>
                         <button onClick={infoPerfil}> Visualizar </button>
                     </div>
-
+                    {/* Informações do Usuário */}
                     <div id="informaçõesPerfil" className="informacoes" style={{ display: OpenPerfil ? 'flex' : 'none' }}>
                         <h1>Suas informações</h1>
                         <label htmlFor="nome">Nome</label>
@@ -396,13 +414,15 @@ function Tela() {
                         <p id="msg" className="beforeCodigo"></p>
                     </div>
                 
+                    {/* Card para visualizar ou criar/gerar senhas */}
                     <div id="SGSenhas" className="card">
                         <h2>🔑 Gerador e Salvador de Senhas</h2>
                         <p> Visualize e crie suas senhas </p>
                         <button onClick={infoSenhas}> Visualizar senhas salvas </button>
-                        <button onClick={createS}> Ir gerar Senhas </button>
+                        <button onClick={createS}> Ir gerar/criar Senhas </button>
                     </div>
 
+                    {/* Tela para confirmar senha */}
                     <div className="confirmSenha" style={{display: tela ? 'flex' : 'none'}}>
                         <p>Digite a sua senha do site</p>
                         <div className='senhas'>
@@ -413,6 +433,7 @@ function Tela() {
                         <p id="msgCS"></p>
                     </div>
 
+                    {/* Tela Senhas Salvas */}
                     <div className="senhasSalvas" style={{display: senhasSalvas ? 'flex' : 'none'}}>
                         <h1> Suas Senhas Salvas </h1>
                         <div id="divSenhas">
@@ -434,7 +455,8 @@ function Tela() {
                         <button onClick={voltarSS}> Voltar </button>
                         <p id="msgSS"></p>
                     </div>
-
+                    
+                    {/* Tela Gerador de Senhas */}
                     <div className="geradorSenha" style={{display: gerador ? 'flex' : 'none'}}>
                         <h1>Gerador de Senhas</h1>
                         <div className="opcoesSenha">
@@ -454,7 +476,7 @@ function Tela() {
                             <label> <input type="checkbox" checked={useEspeciais} onChange={(e) => {setUseEspeciais(e.target.checked)}} value="simbolos" id="simbolos" />Simbolos </label>
                         </div>
                         <input id="Dsenha" type="text" name="senha" placeholder="Descrição da sua senha" ref={inputDescricao}></input>
-                        <input id="Gsenha" type="text" name="senha" placeholder="Sua senha gerada aqui" value={senha} onChange={(e) => setSenha(e.target.value)}></input>
+                        <input id="Gsenha" type="text" name="senha" placeholder="Sua senha gerada/criada aqui" value={senha} onChange={(e) => setSenha(e.target.value)}></input>
                         <div className="botoes">
                             <button className="imgButton" onClick={gerarSenha}> Gerar Senha </button>
                             <button className="saveButton" onClick={salvarSenha}> Salvar Senha </button>

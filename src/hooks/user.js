@@ -1,3 +1,4 @@
+//Arquivo de conexão do front-end com o back-end(API)
 import axios from 'axios'
 
 const API = axios.create({

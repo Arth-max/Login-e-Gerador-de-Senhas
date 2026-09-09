@@ -1,3 +1,4 @@
+//importações de imagens, arquivos e funções
 import ImgLogin from '../../assets/Imglogin.jpg'
 import verSenha from '../../assets/verSenha.png'
 import desverSenha from '../../assets/desverSenha.png'
@@ -27,6 +28,7 @@ function Home() {
   const NinputSenha = useRef()
   const Email = useRef()
 
+  //Funções relacionadas aos estados da tela\\
   //ativar tela login
   function telaLogin() {
     setTela('login')
@@ -57,6 +59,7 @@ function Home() {
     )
   }
 
+  //Funções relacionadas a API\\
   //função fazer login pela API
   async function findUsers() {
     setLoading(true)
