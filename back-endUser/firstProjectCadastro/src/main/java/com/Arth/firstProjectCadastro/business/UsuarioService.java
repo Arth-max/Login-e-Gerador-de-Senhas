@@ -282,4 +282,14 @@ public class UsuarioService {
     public void deletarUsuarioPorEmail(String email) {
         repository.deleteByEmail(email);
     }
+
+    public void deletarSenha(String email, int id) {
+        User usuario = repository.findByEmail(email).orElseThrow(
+                () -> new RuntimeException("Usuario não encontrado")
+        );
+        SenhasSalvas senhaD = senhasRepository.findByIdAndUsuario(id, usuario).orElseThrow(
+                () -> new RuntimeException("Password not found")
+        );
+        senhasRepository.delete(senhaD);
+    }
 }
