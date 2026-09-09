@@ -226,6 +226,7 @@ function Tela() {
                 document.getElementById('msgSS').textContent = "Nenhuma senha salva"
                 return
             }
+            document.getElementById('msgSS').textContent = ''
         } catch (error) {
             document.getElementById('msgCS').style.color = 'darkred'
             document.getElementById('msgCS').textContent = "Senha incorreta"
