@@ -9,9 +9,9 @@ import { closeInputs } from '../../hooks/user'
 
 function Home() {
   const [tela, setTela] = useState('login') //estado da tela (login, cadastro, esqueciSenha)
-  const [VerSenha, setMostrarSenha] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const navigate = useNavigate()
+  const [VerSenha, setMostrarSenha] = useState(false) //estado da visibilidade da senha
+  const [loading, setLoading] = useState(false) //estado do botão
+  const navigate = useNavigate() //navegador
 
   //login
   const inputName = useRef()
@@ -45,11 +45,11 @@ function Home() {
     document.getElementById('msgLogin').textContent = ""
     document.getElementById('msgCadastro').textContent = ""
   }
-
+  //função para mostrar senha
   function mostrarSenha() {
     setMostrarSenha(!VerSenha)
   }
-
+  //função para validar senha conforme regras
   function validarSenha(senha) {
     return (
       /[0-9]/.test(senha) && /[A-Z]/.test(senha) && /[a-z]/.test(senha)
@@ -57,7 +57,7 @@ function Home() {
     )
   }
 
-  //função buscar usuários pela API
+  //função fazer login pela API
   async function findUsers() {
     setLoading(true)
     try {
@@ -137,6 +137,7 @@ function Home() {
     }
   }
 
+  //função para enviar email para recuperar senha pela API
   async function setEmail() {
     setLoading(true)
     const email = Email.current.value;

@@ -227,7 +227,6 @@ function Tela() {
                 return
             }
         } catch (error) {
-            console.error = error
             document.getElementById('msgCS').style.color = 'darkred'
             document.getElementById('msgCS').textContent = "Senha incorreta"
         }
@@ -284,6 +283,35 @@ function Tela() {
         } catch (error) {
             document.getElementById('msgGS').style.color = 'darkred'
             document.getElementById('msgGS').textContent = "Erro ao salvar senha"
+        }
+    }
+
+    async function deletarSenha(id) {
+        const confirm = window.confirm("Deseja realmente deletar essa senha?")
+
+        if (!confirm) { return }
+
+        try {
+            await API.delete(`/usuario/deletar-senha?email=${encodeURIComponent(usuario.email)}&id=${encodeURIComponent(id)}`)
+            setSavePass(prev => {
+                const novasSenhas = prev.filter(item => item.id !== id)
+
+                if (novasSenhas.length === 0) {
+                    document.getElementById('msgSS').style.color = 'darkred'
+                    document.getElementById('msgSS').textContent = "Nenhuma senha salva"
+                } else {
+                    document.getElementById('msgSS').style.color = 'seagreen'
+                    document.getElementById('msgSS').textContent = "Senha deletada com sucesso"
+                }
+                return novasSenhas
+            })
+            setSenhaVisivel(null)
+            
+            document.getElementById('msgSS').style.color = 'seagreen'
+            document.getElementById('msgSS').textContent = "Senha deletada com sucesso"
+        } catch (error) {
+            document.getElementById('msgSS').style.color = 'darkred'
+            document.getElementById('msgSS').textContent = "Erro ao deletar senha"
         }
     }
 
@@ -394,6 +422,9 @@ function Tela() {
                                     <input type={senhaVisivel === item.id ? 'text' : 'password'} value={item.senha} readOnly />
                                     <button type="button" onClick={() => mostrarSenhas(item.id)}>
                                         <img src={senhaVisivel === item.id ? desverSenha : verSenha}/>
+                                    </button>
+                                    <button type="button" onClick={() => deletarSenha(item.id)}>
+                                        <img src={Lixeira} alt="Deletar Senha"/>
                                     </button>
                                     </div>
                                 </div>
