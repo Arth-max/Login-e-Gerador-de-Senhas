@@ -31,5 +31,5 @@ build/
 
 ### VS Code ###
 .vscode/
-firstProjectCadastro/.env
-firstProjectCadastro/firstProjectCadastro/src/main/resources/application.properties
+.env
+/src/main/resources/application.properties

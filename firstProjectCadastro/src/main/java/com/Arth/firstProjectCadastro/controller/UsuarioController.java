@@ -91,6 +91,12 @@ public class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
+    @DeleteMapping("/deletar-senha")
+    public ResponseEntity<Void> deletarSenha(@RequestParam String email, @RequestParam int id) {
+        usuarioService.deletarSenha(email, id);
+        return ResponseEntity.noContent().build();
+    }
+
     @PutMapping
     public ResponseEntity<Void> atualizarUsuario(@RequestParam String email, @RequestBody User usuario) {
         usuarioService.atualizarUsuario(email, usuario);
