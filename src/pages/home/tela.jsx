@@ -11,6 +11,7 @@ import desverSenha from '../../assets/desverSenha.png'
 import verSenha from '../../assets/verSenha.png'
 import API from '../../hooks/user.js'
 import { useState, useRef } from 'react'
+import Footer from '../../components/Footer/Footer.jsx'
 
 function Tela() {
     const Location = useLocation() //Estado local
@@ -95,6 +96,7 @@ function Tela() {
     function infoSenhas() {
         if (tela) {
             setTela(false)
+            document.getElementById('msgCS').textContent = ''
         } else {
             setTela(prev => !prev)
         }
@@ -368,7 +370,7 @@ function Tela() {
                 <h1>Site de testes</h1>
                 <div className="botoes">
                     <button className="editButton" onClick={mudarTema}><img src={Edit} alt="Mudar Tema"/></button>
-                    <button className="configButton" onClick={abrirConfig}><img src={Config} alt="Configurações" /></button>
+                    <button className="configButton" onClick={abrirConfig}><img src={Config} alt="Configurações"/></button>
                 </div>
             </header>
 
@@ -487,6 +489,7 @@ function Tela() {
                 </section>
                 <button className="logout" onClick={voltar}> Sair </button>
             </main>
+            <Footer />
         </div>
     )
 }

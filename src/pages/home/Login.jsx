@@ -1,12 +1,12 @@
 //importações de imagens, arquivos e funções
-import ImgLogin from '../../assets/Imglogin.jpg'
 import verSenha from '../../assets/verSenha.png'
 import desverSenha from '../../assets/desverSenha.png'
-import './index.css'
+import './Login.css'
 import { useState, useRef, useEffect } from 'react'
 import API from '../../hooks/user.js'
 import { useNavigate } from 'react-router-dom'
-import { closeInputs } from '../../hooks/user'
+import { closeInputs } from '../../hooks/user.js'
+import Footer from '../../components/Footer/Footer.jsx'
 
 function Home() {
   const [tela, setTela] = useState('login') //estado da tela (login, cadastro, esqueciSenha)
@@ -46,6 +46,7 @@ function Home() {
     setTela('esqueciSenha')
     document.getElementById('msgLogin').textContent = ""
     document.getElementById('msgCadastro').textContent = ""
+    document.getElementById('email').style.display = 'block'
   }
   //função para mostrar senha
   function mostrarSenha() {
@@ -153,6 +154,7 @@ function Home() {
     try {
         await API.post('/usuario/recuperar-senha?email=' + email)
         document.getElementById('EnvEmail').style.display = 'none'
+        document.getElementById('email').style.display = 'none'
         document.getElementById('codigo').style.display = 'block'
         document.getElementById('Nsenha').style.display = 'block'
         document.getElementById('UpPass').style.display = 'block'
@@ -214,7 +216,7 @@ function Home() {
   }, [])
 
   return (
-    <div className='App' style={{ backgroundImage: `url(${ImgLogin})` }}>
+    <div className='App'>
       {/* Botões de cadastro e Login */}
       <div className='botoes'>
         <button className='botoesPrincipais' onClick={telaLogin}>Fazer Login</button>
@@ -253,7 +255,7 @@ function Home() {
       {/* Tela Esqueci Senha */}
       <form className='forgotPass' style={{ display: tela === 'esqueciSenha' ? 'flex' : 'none' }}>
         <h1>Redefinir senha</h1>
-        <input name="Email" type="email" placeholder='Digite seu Email' ref={Email} />
+        <input id='email' name="Email" type="email" placeholder='Digite seu Email' ref={Email} />
         <input id='codigo' className='beforeCodigo' type="number" placeholder='Digite o código enviado pelo email' ref={codigo} />
 
         {/* Div para criar nova senha */}
@@ -267,6 +269,7 @@ function Home() {
         <button type="button" onClick={telaLogin}>Voltar</button>
         <p id="msgEsqueciSenha" style={{ color: 'seagreen' }}></p>
       </form>
+      <Footer />
     </div>
   )
 }
