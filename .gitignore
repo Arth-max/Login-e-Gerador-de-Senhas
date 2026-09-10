@@ -9,6 +9,7 @@ lerna-debug.log*
 
 node_modules
 back-endUser/.env
+back-endUser/.firstProjectCadastro/src/main/resources/application.properties
 dist
 dist-ssr
 *.local
