@@ -72,13 +72,13 @@ function Tela() {
     }
     //Abrir tela para editar o perfil
     function infoPerfil() {
-        document.getElementById('perfil').style.display = 'none'
         setOpenPerfil(true)
         setOpenConfig(false)
+        document.getElementById('SGSenhas').style.display = 'none'
     }
     //Fechar tela para editar o perfil
     function fecharInfo() {
-        document.getElementById('perfil').style.display = 'flex'
+        document.getElementById('SGSenhas').style.display = 'flex'
         setOpenPerfil(false)
     }
     //Abrir tela de configurações
@@ -93,13 +93,15 @@ function Tela() {
         }
     }
     //Abrir tela para confirmar senha do usuário
-    function infoSenhas() {
-        if (tela) {
-            setTela(false)
-            document.getElementById('msgCS').textContent = ''
-        } else {
-            setTela(prev => !prev)
-        }
+    function infoConfirmSenhas() {
+        setTela(prev => !prev)
+        document.getElementById('SGSenhas').style.display = 'none'
+    }
+    
+    function voltarSGSenhas() {
+        document.getElementById('SGSenhas').style.display = 'flex'
+        document.getElementById('msgCS').textContent = ''
+        setTela(false)
     }
     //Abrir tela do gerador de senha
     function createS() {
@@ -131,6 +133,7 @@ function Tela() {
     //Função para voltar da tela Senhas Salvas para tela principal
     function voltarSS() {
         setSenhasSalvas(false)
+        document.getElementById('SGSenhas').style.display = 'flex'
         document.getElementById('Csenha').value = ''
         document.getElementById('msgCS').style.display = 'none'
     }
@@ -396,7 +399,7 @@ function Tela() {
 
                 {/* Card de informações do usuário */}
                 <section className="cards">
-                    <div id="perfil" className="card">
+                    <div className="card">
                         <h2>🙋‍♂️ Seu Perfil</h2>
                         <p> Visualize e edite suas informações de usuário </p>
                         <button onClick={infoPerfil}> Visualizar </button>
@@ -420,7 +423,7 @@ function Tela() {
                     <div id="SGSenhas" className="card">
                         <h2>🔑 Gerador e Salvador de Senhas</h2>
                         <p> Visualize e crie suas senhas </p>
-                        <button onClick={infoSenhas}> Visualizar senhas salvas </button>
+                        <button onClick={infoConfirmSenhas}> Visualizar senhas salvas </button>
                         <button onClick={createS}> Ir gerar/criar Senhas </button>
                     </div>
 
@@ -431,7 +434,10 @@ function Tela() {
                             <input id="Csenha" type={VerSenha ? 'text' : 'password'} name="senha" placeholder="Sua senha" ref={inputConfirmSenha}></input>
                             <button type="button" className='divSenhas' onClick={mostrarSenha}><img src={VerSenha ? desverSenha : verSenha} alt="" /></button>
                         </div>
-                        <button className="imgButton" onClick={confirmSenha}> Confirmar Senha </button>
+                        <div className="botoes">
+                            <button className="imgButton" onClick={confirmSenha}> Confirmar Senha </button>
+                            <button onClick={voltarSGSenhas}> Voltar </button>
+                        </div>
                         <p id="msgCS"></p>
                     </div>
 

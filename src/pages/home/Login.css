@@ -196,3 +196,16 @@ input:focus {
 input::placeholder {
   color: mintcream;
 }
+
+@media (max-width: 480px) {
+  .login, .cadastro, .forgotPass {
+    padding: 20px;
+    width: 300px;
+  }
+}
+@media (max-width: 400px) {
+  .login, .cadastro, .forgotPass {
+    padding: 15px;
+    width: 200px;
+  }
+}

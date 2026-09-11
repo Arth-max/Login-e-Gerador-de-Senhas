@@ -5,8 +5,10 @@
   padding-top: 10px;
   min-height: 100vh;
   width: 100%;
+  box-sizing: border-box;
 
   background-color: #222;
+  color: white;
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -36,8 +38,9 @@
   padding-top: 10px;
   min-height: 100vh;
   width: 100%;
+  box-sizing: border-box;
 
-   background-color: #222;
+  color: #222;
   background: rgba(255, 255, 255, 0.9);
   background-size: cover;
   background-position: center;
@@ -237,6 +240,9 @@
 .geradorSenha input[type="text"] {
   width: 50%;
 }
+.geradorSenha .botoes button {
+  width: 100%;
+}
 .senhasSalvas {
   position: absolute;
   left: 50%;
@@ -320,6 +326,7 @@
 .senhaSalva label {
   font-size: 18px;
   font-weight: bold;
+  color: #222;
 }
 
 .campoSenha {
@@ -329,6 +336,8 @@
 }
 .campoSenha input {
   flex: 1;
+  height: 40px;
+  border-radius: 10px;
 }
 .campoSenha button {
   width: 45px;
@@ -342,36 +351,47 @@
 }
 
 .confirmSenha {
-  min-height: 80px;
+  position: absolute;
+  left: 50%;
+  top: 45%;
   padding: 25px;
   gap: 15px;
-  width: 80%;
+  width: 50%;
+  max-width: 400px;
+  margin: 0 auto;
   box-sizing: border-box;
   display: none;
   flex-direction: column;
   align-items: center;
   border-radius: 18px;
-  background: rgba(20, 20, 20, 0.45);
+  background: rgba(20, 20, 20, 0.5);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: 0.3s ease;
+  transform: translate(-50%, -50%);
+}
+
+.confirmSenha .botoes button {
+  width: 100%;
 }
 
 .informacoes {
-  min-height: 280px;
-  padding: 25px;
-  margin: 0 auto;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  padding: 30px;
   gap: 15px;
-  width: 90%;
-  max-width: 700px;
+  width: 70%;
+  max-width: 500px;
+  margin: 0 auto;
   box-sizing: border-box;
   display: none;
   flex-direction: column;
+  align-items: center;
   border-radius: 18px;
-  background: rgba(20, 20, 20, 0.45);
+  background: rgba(20, 20, 20, 0.5);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  transition: 0.3s ease;
+  transform: translate(-50%, -50%);
 }
 .informacoes input {
     border-radius: 10px;
@@ -379,7 +399,7 @@
     box-sizing: border-box;
     padding: 0 5px;
     gap: 20px;
-    width: 80%;
+    width: 90%;
     background: rgba(255, 255, 255, 0.05);
     color: mintcream;
     font-size: 14px;
@@ -613,4 +633,24 @@
 img {
   width: 20px;
   height: 20px;
+}
+
+@media (max-width: 480px) {
+  .cards {
+    grid-template-columns: repeat(1, 1fr);
+  }
+  .card {
+    width: 100%;
+  }
+  .informacoes {
+    width: 90%;
+    margin: 0;
+  }
+  .confirmSenha {
+    width: 90%;
+    margin: 0;
+  }
+  .geradorSenha .botoes {
+    max-width: 90%;
+  }
 }
