@@ -1,21 +1,23 @@
 package com.Arth.firstProjectCadastro.controller;
 
+import com.Arth.firstProjectCadastro.business.TokenService;
 import com.Arth.firstProjectCadastro.business.UsuarioService;
+import com.Arth.firstProjectCadastro.infrastructure.DTOs.*;
 import com.Arth.firstProjectCadastro.infrastructure.entitys.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
-
 @RestController
 @RequestMapping("/usuario")
 @RequiredArgsConstructor
-@CrossOrigin
 public class UsuarioController {
 
     private final UsuarioService usuarioService;
+    private final TokenService tokenService;
 
     @PostMapping
     public ResponseEntity<Void> salvarUsuario(@RequestBody User usuario) {
@@ -31,21 +33,24 @@ public class UsuarioController {
     public ResponseEntity<UsuarioResponseDTO> login(@RequestBody LoginDTO login) {
         try {
             User usuario = usuarioService.login(login.nome(), login.senha());
-            return ResponseEntity.ok(new UsuarioResponseDTO(usuario));
+            String token = tokenService.gToken(usuario);
+            return ResponseEntity.ok(new UsuarioResponseDTO(usuario, token));
         } catch (RuntimeException e) {
             return ResponseEntity.status(401).build();
         }
     }
 
     @PostMapping("/image")
-    public ResponseEntity<Void> salvarImagem(@RequestParam String imagemUrl, @RequestParam String nome) {
-        usuarioService.salvarImagem(imagemUrl, nome);
+    public ResponseEntity<Void> salvarImagem(@RequestParam String imagemUrl, Authentication authentication) {
+        User usuario = (User) authentication.getPrincipal();
+        usuarioService.salvarImagem(imagemUrl, usuario.getEmail());
         return ResponseEntity.ok().build();
     }
 
     @GetMapping("/buscar-senhas")
-    public ResponseEntity<List<SenhasResponseDTO>> searchSenhas(@RequestParam String email) {
-        return ResponseEntity.ok(usuarioService.searchSenhas(email));
+    public ResponseEntity<List<SenhasResponseDTO>> searchSenhas(Authentication authentication) {
+        User usuario = (User) authentication.getPrincipal();
+        return ResponseEntity.ok(usuarioService.searchSenhas(usuario.getEmail()));
     }
 
     @PostMapping("/recuperar-senha")
@@ -55,8 +60,9 @@ public class UsuarioController {
     }
 
     @PostMapping("/confirmar-senha")
-    public ResponseEntity<Void> confirmSenha(@RequestParam String email, @RequestBody NewSenhaDTO Csenha) {
-        usuarioService.confirmSenha(email, Csenha.senha());
+    public ResponseEntity<Void> confirmSenha(Authentication authentication, @RequestBody NewSenhaDTO Csenha) {
+        User usuario = (User) authentication.getPrincipal();
+        usuarioService.confirmSenha(usuario.getEmail(), Csenha.senha());
         return ResponseEntity.ok().build();
     }
 
@@ -74,32 +80,37 @@ public class UsuarioController {
     }
 
     @PostMapping("/salvar-senha")
-    public ResponseEntity<Void> salvarSenha(@RequestParam String email, @RequestBody SalvarSenhaDTO Ssenha) {
-        usuarioService.salvarSenha(email, Ssenha.senha(), Ssenha.descricao());
+    public ResponseEntity<Void> salvarSenha(Authentication authentication, @RequestBody SalvarSenhaDTO Ssenha) {
+        User usuario = (User) authentication.getPrincipal();
+        usuarioService.salvarSenha(usuario.getEmail(), Ssenha.senha(), Ssenha.descricao());
         return ResponseEntity.ok().build();
     }
 
     @DeleteMapping
-    public ResponseEntity<Void> deletarUsuarioPorEmail(@RequestParam String email) {
-        usuarioService.deletarUsuarioPorEmail(email);
+    public ResponseEntity<Void> deletarUsuarioPorEmail(Authentication authentication) {
+        User usuario = (User) authentication.getPrincipal();
+        usuarioService.deletarUsuarioPorEmail(usuario.getEmail());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/image")
-    public ResponseEntity<Void> deletarImagem(@RequestParam String nome) {
-        usuarioService.deletarImagem(nome);
+    public ResponseEntity<Void> deletarImagem(Authentication authentication) {
+        User usuario = (User) authentication.getPrincipal();
+        usuarioService.deletarImagem(usuario.getNome());
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/deletar-senha")
-    public ResponseEntity<Void> deletarSenha(@RequestParam String email, @RequestParam int id) {
-        usuarioService.deletarSenha(email, id);
+    public ResponseEntity<Void> deletarSenha(Authentication authentication, @RequestParam int id) {
+        User usuario = (User) authentication.getPrincipal();
+        usuarioService.deletarSenha(usuario.getEmail(), id);
         return ResponseEntity.noContent().build();
     }
 
     @PutMapping
-    public ResponseEntity<Void> atualizarUsuario(@RequestParam String email, @RequestBody User usuario) {
-        usuarioService.atualizarUsuario(email, usuario);
+    public ResponseEntity<Void> atualizarUsuario(Authentication authentication, @RequestBody User usuario) {
+        User usuarioLogado = (User) authentication.getPrincipal();
+        usuarioService.atualizarUsuario(usuarioLogado.getEmail(), usuario);
         return ResponseEntity.ok().build();
     }
 }

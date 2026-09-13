@@ -1,4 +1,4 @@
-package com.Arth.firstProjectCadastro.infrastructure.entitys;
+package com.Arth.firstProjectCadastro.infrastructure.DTOs;
 
 import java.time.LocalDateTime;
 
