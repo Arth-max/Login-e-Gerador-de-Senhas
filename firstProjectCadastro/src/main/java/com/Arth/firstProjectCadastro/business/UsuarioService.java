@@ -1,6 +1,6 @@
 package com.Arth.firstProjectCadastro.business;
 
-import com.Arth.firstProjectCadastro.infrastructure.entitys.SenhasResponseDTO;
+import com.Arth.firstProjectCadastro.infrastructure.DTOs.SenhasResponseDTO;
 import com.Arth.firstProjectCadastro.infrastructure.entitys.User;
 import com.Arth.firstProjectCadastro.infrastructure.entitys.SenhasSalvas;
 import com.Arth.firstProjectCadastro.infrastructure.repository.SenhasRepository;
