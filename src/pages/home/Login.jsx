@@ -79,6 +79,8 @@ function Home() {
         senha: senha
       })
 
+      localStorage.setItem('token', response.data.token)
+      
       document.getElementById('msgLogin').style.color = 'seagreen'
       document.getElementById('msgLogin').textContent = "validado com sucesso"
 

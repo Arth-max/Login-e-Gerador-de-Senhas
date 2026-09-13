@@ -257,13 +257,13 @@
   flex-direction: column;
   align-items: center;
   border-radius: 18px;
-  background: gray;
+  background: rgba(20, 20, 20, 0.5);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   transform: translate(-50%, -50%);
 }
 .senhasSalvas input {
-  background: rgba(47, 79, 79, 0.2);
+  background: rgba(47, 79, 79, 0.4);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(255, 255, 255, 0.2);
 }
@@ -326,7 +326,7 @@
 .senhaSalva label {
   font-size: 18px;
   font-weight: bold;
-  color: #222;
+  color: mintcream;
 }
 
 .campoSenha {

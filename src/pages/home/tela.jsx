@@ -58,6 +58,7 @@ function Tela() {
     function voltar() {
         setImg('')
         navigate('/')
+        localStorage.removeItem('token')
     }
     //Função para mudar o tema principal do site
     function changeColor() {
@@ -79,6 +80,7 @@ function Tela() {
     //Fechar tela para editar o perfil
     function fecharInfo() {
         document.getElementById('SGSenhas').style.display = 'flex'
+        document.getElementById('msg').textContent = ''
         setOpenPerfil(false)
     }
     //Abrir tela de configurações
@@ -97,7 +99,7 @@ function Tela() {
         setTela(prev => !prev)
         document.getElementById('SGSenhas').style.display = 'none'
     }
-    
+    //Função para voltar da tela de confirmar senha para tela principal
     function voltarSGSenhas() {
         document.getElementById('SGSenhas').style.display = 'flex'
         document.getElementById('msgCS').textContent = ''
@@ -154,7 +156,7 @@ function Tela() {
             return
         }
         try {
-            await API.post(`/usuario/image?imagemUrl=${imageUrl}&nome=${nomeUser}`)
+            await API.post(`/usuario/image?imagemUrl=${imageUrl}`)
             setBackgroundImg(img)
             setUsuario({
                 ...usuario,
@@ -172,7 +174,7 @@ function Tela() {
     //Função para remover a imagem de fundo(API)
     async function removeImg() {
         try {
-            await API.delete(`/usuario/image?nome=${encodeURIComponent(usuario.nome)}`)
+            await API.delete(`/usuario/image`)
             setBackgroundImg('')
             setImg('')
             document.getElementById('msgImg').style.color = 'seagreen'
@@ -206,7 +208,7 @@ function Tela() {
             }
 
             setLoading(true)
-            await API.put(`/usuario?email=${usuario.email}`, {
+            await API.put(`/usuario`, {
                 email: novoEmail,
                 nome: novoNome
             })
@@ -235,7 +237,7 @@ function Tela() {
             return
         } else {
             try {
-                await API.delete(`/usuario?email=${usuario.email}`)
+                await API.delete(`/usuario`)
                 alert("Usuário deletado com sucesso!")
                 navigate('/')
             } catch (error) {
@@ -256,13 +258,13 @@ function Tela() {
         }
 
         try {
-            await API.post(`/usuario/confirmar-senha?email=${encodeURIComponent(usuario.email)}`, {
+            await API.post(`/usuario/confirmar-senha`, {
                 senha: senha
             })
             document.getElementById('msgCS').style.color = 'seagreen'
             document.getElementById('msgCS').textContent = "Senha correta"
 
-            const SenhaResponse = await API.get(`/usuario/buscar-senhas?email=${encodeURIComponent(usuario.email)}`)
+            const SenhaResponse = await API.get(`/usuario/buscar-senhas`)
             setSavePass(SenhaResponse.data)
             
             setTela(false)
@@ -316,7 +318,7 @@ function Tela() {
         }
 
         try {
-            await API.post(`/usuario/salvar-senha?email=${encodeURIComponent(usuario.email)}`, {
+            await API.post(`/usuario/salvar-senha`, {
                 senha: senha,
                 descricao: descricao
             })
@@ -343,7 +345,7 @@ function Tela() {
         if (!confirm) { return }
 
         try {
-            await API.delete(`/usuario/deletar-senha?email=${encodeURIComponent(usuario.email)}&id=${encodeURIComponent(id)}`)
+            await API.delete(`/usuario/deletar-senha?id=${encodeURIComponent(id)}`)
             setSavePass(prev => {
                 const novasSenhas = prev.filter(item => item.id !== id)
 
